@@ -155,24 +155,29 @@
 
     <div class="p-4 rounded about-box">
         <div class="row align-items-start g-4">
-            <!-- Kolom untuk foto -->
-            <div class="col-md-4 col-lg-3 text-center">
-                <div class="developer-photo mb-3">
+            <!-- Kolom untuk foto saja -->
+            <div class="col-md-3 text-center">
+                <div class="developer-photo">
                     <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
                          alt="Arsya Khalid Mahardika" 
                          class="img-fluid rounded shadow">
                 </div>
-                <h5 class="fw-bold mb-1">Arsya Khalid Mahardika</h5>
-                <p class="text-muted small mb-2">Developer & Founder</p>
-                <p class="small mb-0">
-                    <strong>NIM:</strong> 23051130041<br>
-                    <strong>Prodi:</strong> Teknologi Informasi<br>
-                    <strong>Universitas:</strong> UNY
-                </p>
             </div>
 
-            <!-- Kolom untuk konten -->
-            <div class="col-md-8 col-lg-9">
+            <!-- Kolom untuk informasi developer -->
+            <div class="col-md-3">
+                <div class="developer-info">
+                    <h5 class="fw-bold mb-2">Arsya Khalid Mahardika</h5>
+                    <div class="developer-details">
+                        <p class="mb-1"><strong>NIM:</strong> 23051130041</p>
+                        <p class="mb-1"><strong>Program Studi:</strong> Teknologi Informasi</p>
+                        <p class="mb-0"><strong>Universitas:</strong> Universitas Negeri Yogyakarta</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom untuk konten tentang aplikasi -->
+            <div class="col-md-6">
                 <div class="about-content">
                     <h3 class="fw-bold mb-3">Apa itu EduBudget?</h3>
                     <p class="about-text">
