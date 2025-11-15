@@ -928,6 +928,19 @@ def api_analytics():
 def guide():
     return render_template("guide.html")
 
+# Test Route
+@app.route('/test-db')
+def test_db():
+    try:
+        db.engine.connect()
+        return "✅ MySQL Connected Successfully!"
+    except Exception as e:
+        return f"❌ Database Error: {str(e)}"
+
+@app.route('/')
+def home():
+    return "Welcome to EduBadget with MySQL!"
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
