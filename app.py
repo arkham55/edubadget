@@ -927,7 +927,7 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
 
-from app import app  # atau dari file aplikasi Flask Anda
-
 if __name__ == "__main__":
     app.run()
+
+RAILWAY_START_COMMAND = gunicorn app:app
