@@ -105,3 +105,6 @@ wordcloud==1.9.4
 zipp==3.23.0
 gunicorn==23.0.0
 redis==4.5.4
+mysqlclient==2.2.7
+Flask-MySQLdb==2.0.0
+Flask-SQLAlchemy==3.0.5
