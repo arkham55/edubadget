@@ -24,7 +24,6 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 
 # ===== KONFIGURASI DATABASE =====
-# Pakai DATABASE_URL dari Railway
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -736,55 +735,55 @@ def analytics():
         
         # === VARIABLES UNTUK TEMPLATE ===
         
-      # 1. daily_status
-    try:
-    # Hitung budget harian - PERBAIKAN DI SINI
-        if pemasukan > 0 and days_remaining > 0:
-            daily_budget_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining))
-        else:
-            daily_budget_limit = 0
-    
-    # Hitung pengeluaran hari ini - DENGAN user_id
-    today_expense_result = db.session.execute(
-        db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE user_id=:user_id AND type='pengeluaran' AND date = :today"),
-        {'user_id': user_id, 'today': today}
-    )
-    today_spent = float(today_expense_result.scalar() or 0)
-    
-    # Hitung sisa budget hari ini
-    daily_remaining = daily_budget_limit - today_spent
-    
-    # Tentukan status
-    if today_spent == 0:
-        daily_status_value = 'success'
-    elif today_spent <= daily_budget_limit * 0.7:
-        daily_status_value = 'success'
-    elif today_spent <= daily_budget_limit:
-        daily_status_value = 'warning'
-    else:
-        daily_status_value = 'danger'
-    
-    # Hitung persentase
-    daily_percentage = (today_spent / daily_budget_limit * 100) if daily_budget_limit > 0 else 0
-    
-    daily_status = {
-        'date': today.strftime("%d %B %Y"),
-        'budget_limit': daily_budget_limit,
-        'spent': today_spent,
-        'remaining': daily_remaining,
-        'status': daily_status_value,
-        'percentage': min(100, daily_percentage)
-    }
-except Exception as daily_error:
-    print(f"❌ ERROR in daily_status calculation: {daily_error}")
-    daily_status = {
-        'date': datetime.date.today().strftime("%d %B %Y"),
-        'budget_limit': 0,
-        'spent': 0,
-        'remaining': 0,
-        'status': 'success',
-        'percentage': 0
-    }
+               # 1. daily_status - PERBAIKAN INDEKSASI YANG BENAR
+        try:
+            # Hitung budget harian - PERBAIKAN DI SINI
+            if pemasukan > 0 and days_remaining > 0:
+                daily_budget_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining))
+            else:
+                daily_budget_limit = 0
+            
+            # Hitung pengeluaran hari ini - DENGAN user_id
+            today_expense_result = db.session.execute(
+                db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE user_id=:user_id AND type='pengeluaran' AND date = :today"),
+                {'user_id': user_id, 'today': today}
+            )
+            today_spent = float(today_expense_result.scalar() or 0)
+            
+            # Hitung sisa budget hari ini
+            daily_remaining = daily_budget_limit - today_spent
+            
+            # Tentukan status
+            if today_spent == 0:
+                daily_status_value = 'success'
+            elif today_spent <= daily_budget_limit * 0.7:
+                daily_status_value = 'success'
+            elif today_spent <= daily_budget_limit:
+                daily_status_value = 'warning'
+            else:
+                daily_status_value = 'danger'
+            
+            # Hitung persentase
+            daily_percentage = (today_spent / daily_budget_limit * 100) if daily_budget_limit > 0 else 0
+            
+            daily_status = {
+                'date': today.strftime("%d %B %Y"),
+                'budget_limit': daily_budget_limit,
+                'spent': today_spent,
+                'remaining': daily_remaining,
+                'status': daily_status_value,
+                'percentage': min(100, daily_percentage)
+            }
+        except Exception as daily_error:
+            print(f"❌ ERROR in daily_status calculation: {daily_error}")
+            daily_status = {
+                'date': datetime.date.today().strftime("%d %B %Y"),
+                'budget_limit': 0,
+                'spent': 0,
+                'remaining': 0,
+                'status': 'success',
+                'percentage': 0
+            }
         
         # 2. weekly_progress
         try:
@@ -881,7 +880,7 @@ except Exception as daily_error:
                 prediction_status = 'Aman'
                 prediction_message = 'Pola spending minggu ini sehat dan terkendali'
         
-        # 5. budget_recommendations & total_saving_potential - FIXED VERSION
+        # 5. budget_recommendations & total_saving_potential
         budget_recommendations = []
         total_saving_potential = 0
         
@@ -1109,7 +1108,7 @@ except Exception as daily_error:
         import traceback
         traceback.print_exc()
         return f"Error in analytics: {str(e)}", 500
-        
+
 @app.route("/guide")
 @login_required
 def guide():
