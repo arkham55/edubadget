@@ -357,9 +357,13 @@ def invalidate_analytics_cache(user_id=None):
 
 @app.route("/")
 def index():
+    """Homepage untuk semua user"""
     if 'user_id' in session:
-        return redirect(url_for('dashboard'))
-    return render_template("index.html")
+        # Untuk user login, tampilkan homepage khusus
+        return render_template("index.html", username=session.get('username'), logged_in=True)
+    else:
+        # Untuk user belum login, tampilkan landing page
+        return render_template("index.html", logged_in=False)
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
