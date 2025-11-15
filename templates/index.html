@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section text-center py-5">
+    <h1 class="fw-bold display-4">Kelola Keuanganmu Dengan Lebih Terarah</h1>
+    <p class="mt-3 mx-auto hero-subtitle">
+        EduBudget membantu kamu merencanakan keuangan, menghindari pemborosan, dan
+        membangun kebiasaan finansial yang sehat selama masa kuliah.
+    </p>
+    <a href="/dashboard" class="btn btn-info mt-4 px-4 py-2 fw-bold shadow">
+        Mulai Kelola Sekarang →
+    </a>
+</section>
+
+<!-- Kenapa EduBudget -->
+<section class="container py-5">
+    <h2 class="fw-bold text-center mb-4">Kenapa EduBudget?</h2>
+    <p class="text-center mb-5 section-subtitle">
+        Dibuat khusus untuk mahasiswa yang ingin mengatur uang jajan, kebutuhan bulanan,
+        hingga menabung dengan teratur tanpa ribet.
+    </p>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="p-4 rounded feature-card">
+                <h4 class="fw-bold text-info">📊 Tracking Mudah</h4>
+                <p class="mb-0">Catat pemasukan dan pengeluaran dalam hitungan detik.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 rounded feature-card">
+                <h4 class="fw-bold text-warning">🎯 Target Nabung</h4>
+                <p class="mb-0">Tetapkan tujuan menabung dan pantau progres.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 rounded feature-card">
+                <h4 class="fw-bold text-success">📈 Analisis Cerdas</h4>
+                <p class="mb-0">Saran otomatis dari kebiasaan pengeluaranmu.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Feature Tiles -->
+<section class="container py-5">
+    <div class="row g-4 justify-content-center">
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/dashboard" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-info">
+                    <h4 class="fw-bold mb-1">Dasbor</h4>
+                    <p class="mb-0">Ringkasan keuangan lengkap</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/history" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-warning">
+                    <h4 class="fw-bold mb-1">Riwayat</h4>
+                    <p class="mb-0">Lihat semua transaksi</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="/analytics" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-success">
+                    <h4 class="fw-bold mb-1">Analitik</h4>
+                    <p class="mb-0">Visualisasi dan insight</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<hr class="custom-divider">
+
+<!-- Tentang EduBudget -->
+<section class="container my-5">
+    <h2 class="fw-bold text-center mb-3">Tentang EduBudget</h2>
+    <p class="text-center mb-5 section-subtitle">
+        Platform manajemen keuangan yang dirancang khusus untuk mahasiswa Indonesia
+    </p>
+
+    <div class="p-4 rounded about-box">
+        <div class="row align-items-start g-4">
+
+            <div class="col-md-4 col-lg-3">
+                <div class="about-image-wrapper">
+                    <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
+                         alt="Arsya Khalid Mahardika" 
+                         class="about-image">
+                </div>
+            </div>
+
+            <div class="col-md-8 col-lg-9">
+                <div class="about-content">
+                    <h3 class="fw-bold mb-3">Apa itu EduBudget?</h3>
+                    <p class="about-text">
+                        <strong>EduBudget</strong> adalah aplikasi web gratis yang membantu mahasiswa mengelola keuangan dengan lebih terarah dan cerdas. 
+                        Dilengkapi dengan fitur tracking otomatis, analisis prediksi pengeluaran menggunakan machine learning, 
+                        serta rekomendasi budget yang disesuaikan dengan gaya hidup mahasiswa.
+                    </p>
+                    <p class="about-text">
+                        Dengan EduBudget, kamu bisa memantau pemasukan dan pengeluaran harian, mengatur target menabung, 
+                        mendapatkan insight pengeluaran per kategori, dan melihat prediksi keuangan bulanan. 
+                        Semua dalam satu platform yang mudah digunakan dan mobile-friendly.
+                    </p>
+                    
+                    <div class="mt-4 p-3 rounded developer-box">
+                        <p class="mb-1 fw-bold">👨‍💻 Dikembangkan oleh:</p>
+                        <p class="mb-0"><strong>Arsya Khalid Mahardika</strong></p>
+                        <p class="mb-0 dev-info">Teknologi Informasi — Universitas Negeri Yogyakarta</p>
+                    </div>
+
+                    <div class="text-center text-md-start mt-4">
+                        <a href="/guide" class="btn btn-outline-info px-4 py-2 fw-bold">
+                            📖 Pelajari Cara Menggunakan →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="text-center py-4 mt-5">
+    <p class="mb-0">© 2025 EduBudget · Dibuat oleh Arsya Khalid Mahardika</p>
+</footer>
+
+{% endblock %}

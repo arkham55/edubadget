@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .box-section {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: 0px 4px 14px var(--shadow-light);
+        transition: .3s;
+    }
+
+    .box-section:hover {
+        box-shadow: 0px 10px 25px var(--shadow-hover);
+    }
+
+    input, select, textarea {
+        background: var(--card-bg) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--card-border) !important;
+        transition: background-color .3s, color .3s, border-color .3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--link-hover) !important;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25) !important;
+    }
+</style>
+
+<div class="container py-4">
+    <h2 class="fw-bold text-center mb-4" style="color: var(--text);">Edit Transaksi</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="p-4 rounded box-section">
+                <form method="POST">
+
+                    <label class="mt-2" style="color: var(--link);">Tipe Transaksi</label>
+                    <select name="type" id="typeSelect" class="form-select">
+                        <option value="pemasukan" {% if transaction[3]=='pemasukan' %}selected{% endif %}>Pemasukan</option>
+                        <option value="pengeluaran" {% if transaction[3]=='pengeluaran' %}selected{% endif %}>Pengeluaran</option>
+                    </select>
+
+                    <label class="mt-3" style="color: var(--link);">Kategori</label>
+                    <select name="category" id="categorySelect" class="form-select">
+                        <!-- Options akan diisi oleh JavaScript -->
+                    </select>
+
+                    <label class="mt-3" style="color: var(--link);">Nominal</label>
+                    <input type="number" name="amount" class="form-control" value="{{ transaction[4] }}" required>
+
+                    <label class="mt-3" style="color: var(--link);">Mata Uang</label>
+                    <select name="currency" class="form-select">
+                        <option {% if transaction[5]=='IDR' %}selected{% endif %}>IDR</option>
+                        <option {% if transaction[5]=='USD' %}selected{% endif %}>USD</option>
+                        <option {% if transaction[5]=='EUR' %}selected{% endif %}>EUR</option>
+                        <option {% if transaction[5]=='JPY' %}selected{% endif %}>JPY</option>
+                    </select>
+
+                    <label class="mt-3" style="color: var(--link);">Catatan</label>
+                    <textarea name="note" rows="2" class="form-control">{{ transaction[7] }}</textarea>
+
+                    <label class="mt-3" style="color: var(--link);">Tanggal</label>
+                    <input type="date" name="date" value="{{ transaction[8] }}" class="form-control" required>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-fill fw-bold">Simpan Perubahan</button>
+                        <a href="{{ url_for('history') }}" class="btn btn-secondary flex-fill fw-bold">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== DYNAMIC CATEGORY (SAME AS DASHBOARD) ==========
+    const categories = {
+        pemasukan: [
+            "Uang Bulanan",
+            "Gaji",
+            "Transfer Orang Tua",
+            "Beasiswa",
+            "Freelance",
+            "Lainnya"
+        ],
+        pengeluaran: [
+            "Makanan/Minuman",
+            "Bensin/Transportasi",
+            "Laundry",
+            "Hiburan",
+            "Belanja",
+            "Kuliah/Buku",
+            "Pakaian",
+            "Kos",
+            "Internet/Pulsa",
+            "Kesehatan",
+            "Lainnya"
+        ]
+    };
+
+    const typeSelect = document.getElementById("typeSelect");
+    const categorySelect = document.getElementById("categorySelect");
+    const currentCategory = "{{ transaction[2] }}"; // Kategori yang sedang di-edit
+    const currentType = "{{ transaction[3] }}"; // Tipe transaksi yang sedang di-edit
+
+    function updateCategories() {
+        const type = typeSelect.value;
+        const options = categories[type];
+        
+        categorySelect.innerHTML = "";
+        
+        options.forEach(cat => {
+            const option = document.createElement("option");
+            option.value = cat;
+            option.textContent = cat;
+            
+            // Set selected jika kategori ini adalah kategori yang sedang di-edit
+            if (cat === currentCategory) {
+                option.selected = true;
+            }
+            
+            categorySelect.appendChild(option);
+        });
+    }
+
+    // Event listener untuk perubahan tipe
+    typeSelect.addEventListener("change", updateCategories);
+    
+    // Load categories saat halaman pertama kali dibuka
+    updateCategories();
+</script>
+
+{% endblock %}

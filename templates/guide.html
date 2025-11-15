@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Header -->
+<div class="guide-header text-center">
+    <div class="container">
+        <h1 class="fw-bold display-5 mb-3">📖 Panduan Lengkap EduBudget</h1>
+        <p class="lead mb-0">Pelajari cara menggunakan setiap fitur untuk mengelola keuanganmu dengan maksimal</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            
+            <!-- PENGENALAN -->
+            <div class="guide-section" id="pengenalan">
+                <h3>🎯 Pengenalan</h3>
+                <p>
+                    Selamat datang di <strong>EduBudget</strong>! Aplikasi ini dirancang untuk membantu mahasiswa mengelola 
+                    keuangan dengan lebih mudah dan terarah. Dengan 3 halaman utama yang powerful, kamu bisa:
+                </p>
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <span class="feature-badge">📊 Dasbor</span>
+                        <p class="small">Pantau keuangan secara real-time</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <span class="feature-badge">📜 Riwayat</span>
+                        <p class="small">Kelola semua transaksi</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <span class="feature-badge">📈 Analitik</span>
+                        <p class="small">Dapatkan insight cerdas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div class="guide-section" id="dashboard">
+                <h3>📊 Dasbor - Pusat Kontrol Keuangan</h3>
+                <p>
+                    Dasbor adalah halaman utama yang menampilkan ringkasan keuanganmu secara menyeluruh. 
+                    Di sini kamu bisa melihat sekilas kondisi keuangan dan menambah transaksi baru.
+                </p>
+
+                <h4><span class="step-number">1</span>Ringkasan Keuangan</h4>
+                <p>Pada bagian atas, kamu akan melihat 3 kotak penting:</p>
+                <ul>
+                    <li><strong>Total Pemasukan:</strong> Jumlah semua uang yang masuk (uang jajan, kiriman orang tua, gaji, dll)</li>
+                    <li><strong>Total Pengeluaran:</strong> Jumlah semua uang yang keluar</li>
+                    <li><strong>Saldo:</strong> Sisa uang (Pemasukan - Pengeluaran)</li>
+                </ul>
+
+                <h4><span class="step-number">2</span>Tambah Transaksi Baru</h4>
+                <p>Untuk mencatat transaksi baru, isi form dengan lengkap:</p>
+                <ol>
+                    <li><strong>Kategori:</strong> Pilih jenis transaksi (Makanan, Transport, Hiburan, dll)</li>
+                    <li><strong>Tipe:</strong> Pilih "Pemasukan" atau "Pengeluaran"</li>
+                    <li><strong>Jumlah:</strong> Masukkan nominal uang</li>
+                    <li><strong>Mata Uang:</strong> Pilih IDR (Rupiah) atau mata uang lain jika perlu</li>
+                    <li><strong>Catatan:</strong> Tulis keterangan (misal: "Makan siang di warteg", "Uang bulanan Januari")</li>
+                    <li><strong>Tanggal:</strong> Pilih tanggal transaksi terjadi</li>
+                    <li>Klik tombol <strong>"Tambah Transaksi"</strong></li>
+                </ol>
+
+                <div class="tip-box">
+                    <strong>💡 Tips:</strong> Catat transaksi setiap hari agar data lebih akurat. Gunakan catatan yang jelas 
+                    agar mudah diingat nanti saat review.
+                </div>
+
+                <h4><span class="step-number">3</span>Grafik Pengeluaran per Kategori</h4>
+                <p>
+                    Grafik pie chart (lingkaran) menampilkan perbandingan pengeluaran di setiap kategori. 
+                    Semakin besar bagian kategori, semakin banyak uang yang keluar di kategori tersebut.
+                </p>
+
+                <h4><span class="step-number">4</span>Riwayat Transaksi Terbaru</h4>
+                <p>
+                    Bagian bawah dasbor menampilkan 5 transaksi terakhir. Kamu bisa cek apakah transaksi 
+                    sudah tercatat dengan benar.
+                </p>
+            </div>
+
+            <!-- HISTORY -->
+            <div class="guide-section" id="history">
+                <h3>📜 Riwayat - Kelola Semua Transaksi</h3>
+                <p>
+                    Halaman Riwayat menampilkan <strong>semua transaksi</strong> yang pernah kamu catat, 
+                    lengkap dengan tools untuk edit dan hapus.
+                </p>
+
+                <h4><span class="step-number">1</span>Lihat Semua Transaksi</h4>
+                <p>
+                    Tabel transaksi menampilkan data lengkap: kategori, tipe, jumlah, mata uang, catatan, dan tanggal. 
+                    Transaksi terbaru muncul di paling atas.
+                </p>
+
+                <h4><span class="step-number">2</span>Ubah Transaksi</h4>
+                <p>Jika ada kesalahan input, kamu bisa memperbaikinya:</p>
+                <ol>
+                    <li>Klik tombol <strong>"Ubah"</strong> (ikon pensil) di kolom aksi</li>
+                    <li>Ubah data yang salah</li>
+                    <li>Klik <strong>"Simpan Perubahan"</strong></li>
+                </ol>
+
+                <h4><span class="step-number">3</span>Hapus Transaksi</h4>
+                <p>Untuk menghapus transaksi yang tidak diperlukan:</p>
+                <ol>
+                    <li>Klik tombol <strong>"Hapus"</strong> (ikon trash) di kolom aksi</li>
+                    <li>Transaksi akan langsung terhapus dari database</li>
+                </ol>
+
+                <div class="warning-box">
+                    <strong>⚠️ Peringatan:</strong> Penghapusan bersifat permanen! Pastikan kamu yakin sebelum menghapus transaksi.
+                </div>
+
+                <h4><span class="step-number">4</span>Grafik Tren Pengeluaran</h4>
+                <p>
+                    Grafik line chart menampilkan pola pengeluaran dari waktu ke waktu. Gunakan ini untuk 
+                    melihat kapan kamu paling boros atau paling hemat.
+                </p>
+
+                <h4><span class="step-number">5</span>Grafik Tren Pemasukan</h4>
+                <p>
+                    Grafik kedua menampilkan pola pemasukan. Berguna untuk tracking kapan uang masuk (awal bulan, 
+                    tengah bulan, dll) dan merencanakan pengeluaran.
+                </p>
+            </div>
+
+            <!-- ANALYTICS -->
+            <div class="guide-section" id="analytics">
+                <h3>📈 Analitik - Insight & Rekomendasi Cerdas</h3>
+                <p>
+                    Halaman paling powerful! Analitik menggunakan <strong>machine learning</strong> untuk memberikan 
+                    rekomendasi budget yang personal berdasarkan penghasilanmu dan gaya hidup.
+                </p>
+
+                <h4><span class="step-number">1</span>Atur Target & Lifestyle</h4>
+                <p>Pertama-tama, kamu harus mengatur 2 hal penting:</p>
+                <ul>
+                    <li>
+                        <strong>Target Menabung:</strong> Ketik nominal yang ingin kamu tabung bulan ini 
+                        (atau gunakan preset: 300k, 500k, 1jt)
+                    </li>
+                    <li>
+                        <strong>Lifestyle:</strong> Pilih gaya hidupmu:
+                        <ul>
+                            <li><strong>🟦 Hemat:</strong> Fokus maksimalkan tabungan, pengeluaran minimal</li>
+                            <li><strong>🟩 Moderat:</strong> Seimbang antara kebutuhan dan keinginan</li>
+                            <li><strong>🟧 Aktif:</strong> Banyak aktivitas sosial & pengembangan diri</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>Setelah itu, klik <strong>"🔄 Atur Target Menabung"</strong> dan tunggu loading sebentar.</p>
+
+                <div class="tip-box">
+                    <strong>💡 Tips:</strong> Pilih lifestyle yang sesuai dengan kondisi nyata agar rekomendasi lebih akurat!
+                </div>
+
+                <h4><span class="step-number">2</span>Ringkasan Keuangan Bulan Ini</h4>
+                <p>4 kotak di bagian atas menampilkan:</p>
+                <ul>
+                    <li><strong>Total Pemasukan:</strong> Uang masuk bulan ini</li>
+                    <li><strong>Total Pengeluaran:</strong> Uang keluar bulan ini</li>
+                    <li><strong>Sisa Bulan Ini:</strong> Uang yang masih tersisa</li>
+                    <li><strong>Target Nabung:</strong> Target yang kamu set</li>
+                </ul>
+
+                <h4><span class="step-number">3</span>Peringatan & Prediksi</h4>
+                <p>Sistem akan memberikan notifikasi otomatis jika:</p>
+                <ul>
+                    <li>🚨 <strong>Kritis:</strong> Pengeluaran jauh melebihi budget (spending pace > 150%)</li>
+                    <li>⚠️ <strong>Waspada:</strong> Pengeluaran mulai kebut (spending pace > 120%)</li>
+                    <li>✅ <strong>Aman:</strong> Keuangan terkendali, prediksi mencapai target nabung</li>
+                </ul>
+
+                <h4><span class="step-number">4</span>Budget Hari Ini</h4>
+                <p>
+                    Kotak ini menampilkan <strong>limit harian</strong> yang dihitung otomatis berdasarkan:
+                </p>
+                <ul>
+                    <li>Sisa uang yang tersedia</li>
+                    <li>Target nabung yang harus dipenuhi</li>
+                    <li>Jumlah hari tersisa di bulan ini</li>
+                </ul>
+                <p>
+                    Progress bar berwarna hijau (aman), kuning (mendekati limit), atau merah (over budget). 
+                    <strong>Usahakan tetap di zona hijau!</strong>
+                </p>
+
+                <h4><span class="step-number">5</span>Progress Mingguan</h4>
+                <p>
+                    Tracking pengeluaran minggu ini dibandingkan dengan target mingguan ideal. 
+                    Berguna untuk evaluasi sebelum terlambat.
+                </p>
+
+                <h4><span class="step-number">6</span>Rekomendasi Budget per Kategori</h4>
+                <p>
+                    Ini adalah <strong>fitur paling powerful</strong> di EduBudget! Sistem akan:
+                </p>
+                <ol>
+                    <li>Menghitung budget ideal untuk setiap kategori (Makanan, Transport, dll)</li>
+                    <li>Membandingkan dengan pengeluaran aktualmu</li>
+                    <li>Memberikan status: ✓ OK, ⚠ MENDEKATI LIMIT, atau ✗ OVER BUDGET</li>
+                    <li>Menampilkan potensi hemat jika kamu mengikuti budget ideal</li>
+                    <li>Memberikan tips praktis untuk kategori yang boros</li>
+                </ol>
+
+                <div class="success-box">
+                    <strong>✨ Contoh Tips yang Diberikan:</strong>
+                    <ul class="mb-0">
+                        <li>Makanan boros? → "Warteg/kantin kampus ~Rp 12-15k/porsi" atau "Masak sendiri ~Rp 8-10k/porsi"</li>
+                        <li>Transport mahal? → "Gunakan ojol pool" atau "Jalan kaki/sepeda <2km"</li>
+                    </ul>
+                </div>
+
+                <h4><span class="step-number">7</span>Rekomendasi badget Personal (Machine learning)</h4>
+                <p>
+                    Berdasarkan lifestyle yang kamu pilih, sistem akan memberikan:
+                </p>
+                <ul>
+                    <li><strong>Alokasi Budget Otomatis:</strong> Breakdown budget untuk makanan, transportasi, hiburan, dll
+                        yang sudah diprediksi menggunakan model ML</li>
+                    <li><strong>Insight Khusus:</strong> Penjelasan karakteristik lifestyle-mu</li>
+                    <li><strong>Tips Personal:</strong> Saran yang disesuaikan dengan gaya hidupmu</li>
+                </ul>
+
+                <h4><span class="step-number">8</span>Tips Finansial Mahasiswa</h4>
+                <p>
+                    Di bagian paling bawah, ada kumpulan tips umum untuk kelola keuangan mahasiswa. 
+                    Baca dan praktikkan untuk hasil maksimal!
+                </p>
+            </div>
+
+            <!-- TIPS MAKSIMALKAN -->
+            <div class="guide-section" id="tips">
+                <h3>🎯 Tips Memaksimalkan EduBudget</h3>
+                
+                <h4>1️⃣ Catat Setiap Hari</h4>
+                <p>
+                    Tracking yang akurat dimulai dari kebiasaan mencatat setiap transaksi. Set reminder harian 
+                    di HP untuk review pengeluaran sebelum tidur.
+                </p>
+
+                <h4>2️⃣ Review Mingguan</h4>
+                <p>
+                    Setiap akhir minggu, buka halaman Analitik untuk cek:
+                </p>
+                <ul>
+                    <li>Apakah minggu ini over budget?</li>
+                    <li>Kategori mana yang paling boros?</li>
+                    <li>Masih bisa mencapai target nabung atau tidak?</li>
+                </ul>
+
+                <h4>3️⃣ Gunakan Catatan yang Jelas</h4>
+                <p>
+                    Jangan cuma tulis "makan" atau "transport". Tulis detail: "Makan siang warteg Bu Tini", 
+                    "Ojol ke kampus dari kos". Nanti mudah di-review.
+                </p>
+
+                <h4>4️⃣ Manfaatkan Prediksi</h4>
+                <p>
+                    Jika sistem kasih warning "spending pace > 150%", itu artinya kamu harus <strong>segera</strong> 
+                    kurangi pengeluaran. Jangan tunggu sampai uang habis!
+                </p>
+
+                <h4>5️⃣ Ikuti Rekomendasi Budget</h4>
+                <p>
+                    Rekomendasi dari ML bukan angka asal-asalan, tapi berdasarkan data mahasiswa lain yang sukses 
+                    menabung. Coba ikuti dan lihat hasilnya dalam 1 bulan.
+                </p>
+
+                <h4>6️⃣ Jangan Lupa Kategori Fleksibel</h4>
+                <p>
+                    Sistem menyarankan 20% dari income untuk kategori fleksibel (Emergency Fund/Personal Needs/Self-Improvement). 
+                    Ini penting untuk jaga-jaga dan investasi diri!
+                </p>
+
+                <div class="success-box">
+                    <strong>🎖️ Challenge:</strong> Coba gunakan EduBudget konsisten selama 1 bulan penuh. 
+                    Dijamin kamu akan lebih aware dengan pengeluaran dan berhasil menabung lebih banyak!
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="guide-section" id="faq">
+                <h3>❓ FAQ - Pertanyaan yang Sering Ditanya</h3>
+
+                <h4>Q: Kenapa loading Analitik agak lama?</h4>
+                <p>
+                    A: Analitik melakukan banyak perhitungan kompleks (prediksi ML, analisis kategori, forecast spending). 
+                    Biasanya selesai dalam 1-3 detik. Jika lebih lama, coba refresh halaman.
+                </p>
+
+                <h4>Q: Apakah data saya aman?</h4>
+                <p>
+                    A: Ya! Data disimpan di database lokal dan tidak dibagikan ke pihak ketiga. 
+                    Hanya kamu yang bisa akses data keuanganmu.
+                </p>
+
+                <h4>Q: Bisa pakai mata uang selain Rupiah?</h4>
+                <p>
+                    A: Bisa! Sistem mendukung konversi otomatis dari berbagai mata uang (USD, EUR, dll) ke Rupiah 
+                    menggunakan exchange rate real-time.
+                </p>
+
+                <h4>Q: Target nabung harus diisi setiap bulan?</h4>
+                <p>
+                    A: Tidak wajib, tapi sangat disarankan! Target nabung membantu sistem memberikan rekomendasi 
+                    yang lebih akurat. Jika tidak diisi, sistem akan otomatis set 15% dari pemasukan.
+                </p>
+
+                <h4>Q: Kategori bisa ditambah custom?</h4>
+                <p>
+                    A: Saat ini kategori sudah fixed untuk konsistensi analisis ML. Tapi kamu bisa gunakan catatan 
+                    untuk detail spesifik (misal: kategori "Belanja", catatan "Beli skincare").
+                </p>
+
+                <h4>Q: Data bulan lalu bisa dilihat?</h4>
+                <p>
+                    A: Semua data historis tersimpan dan bisa dilihat di halaman Riwayat. Untuk analitik per bulan, 
+                    saat ini fokus ke bulan berjalan. Fitur historical analitik sedang dikembangkan!
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Quick Navigation -->
+        <div class="col-lg-3">
+            <div class="quick-nav">
+                <h6 class="fw-bold mb-3">Navigasi Cepat</h6>
+                <a href="#pengenalan">🎯 Pengenalan</a>
+                <a href="#dashboard">📊 Dasbor</a>
+                <a href="#history">📜 Riwayat</a>
+                <a href="#analytics">📈 Analitik</a>
+                <a href="#tips">💡 Tips Maksimal</a>
+                <a href="#faq">❓ FAQ</a>
+                <hr>
+                <a href="/" class="back-home">← Kembali ke Home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

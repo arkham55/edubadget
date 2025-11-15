@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+    <h2 class="fw-bold text-center mb-4">Riwayat Transaksi</h2>
+
+    <!-- Filter & Pencarian -->
+    <div class="filter-box">
+        <select id="filterKategori" class="form-select">
+            <option value="">Semua Kategori</option>
+            <option>Uang Bulanan</option>
+            <option>Gaji</option>
+            <option>Transfer Orang Tua</option>
+            <option>Beasiswa</option>
+            <option>Freelance</option>
+            <option>Makanan/Minuman</option>
+            <option>Bensin/Transportasi</option>
+            <option>Laundry</option>
+            <option>Hiburan</option>
+            <option>Belanja</option>
+            <option>Kuliah/Buku</option>
+            <option>Pakaian</option>
+            <option>Kos</option>
+            <option>Internet/Pulsa</option>
+            <option>Kesehatan</option>
+            <option>Lainnya</option>
+        </select>
+
+        <input type="text" id="searchInput" class="form-control" placeholder="Cari transaksi...">
+    </div>
+
+    <!-- Grafik Tren -->
+    <div class="p-4 rounded mb-4 box-section">
+        <h4 class="text-center mb-3">Tren Pemasukan & Pengeluaran per Tanggal</h4>
+        <canvas id="trendChart" height="100"></canvas>
+    </div>
+
+    <!-- Tabel Riwayat -->
+    <div class="p-4 rounded box-section">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="transactionTable">
+                <thead>
+                    <tr>
+                        <th>KATEGORI</th>
+                        <th class="text-center">TIPE</th>
+                        <th class="text-end">NOMINAL (IDR)</th>
+                        <th class="text-center">TANGGAL</th>
+                        <th class="text-center">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>
+                            <div class="table-category-container">
+                                <span class="table-emoji">{{ get_emoji(t[2]) }}</span>
+                                <span class="table-category-text">{{ t[2] if t[2] else '-' }}</span>
+                            </div>
+                        </td>
+
+                        <td class="text-center">
+                            {% if t[3] == 'pemasukan' %}
+                            <span class="badge-income">PEMASUKAN</span>
+                            {% else %}
+                            <span class="badge-expense">PENGELUARAN</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            <span
+                                class="table-amount {% if t[3] == 'pemasukan' %}text-success{% else %}text-danger{% endif %}">
+                                Rp {{ "{:,.0f}".format(t[6]).replace(",", ".") }}
+                            </span>
+                        </td>
+
+                        <td class="text-center">
+                            <span class="table-date-text">{{ t[8].strftime('%d %b %Y') if t[8] else '-' }}</span>
+                        </td>
+
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <a href="{{ url_for('edit', id=t[0]) }}"
+                                    class="btn btn-sm btn-outline-warning fw-bold">Ubah</a>
+                                <a href="{{ url_for('delete', id=t[0]) }}" class="btn btn-sm btn-outline-danger fw-bold"
+                                    onclick="return confirm('Yakin ingin menghapus transaksi ini?')">Hapus</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT FILTER & PENCARIAN -->
+<script>
+    const searchInput = document.getElementById("searchInput");
+    const filterKategori = document.getElementById("filterKategori");
+    const tableRows = document.querySelectorAll("#transactionTable tbody tr");
+
+    function filterTable() {
+        const search = searchInput.value.toLowerCase();
+        const kategori = filterKategori.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const categoryCell = row.children[0].textContent.toLowerCase();
+            const shouldShow = text.includes(search) && (kategori === "" || categoryCell.includes(kategori));
+            row.style.display = shouldShow ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("keyup", filterTable);
+    filterKategori.addEventListener("change", filterTable);
+</script>
+
+<!-- SCRIPT GRAFIK TREN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const dates_pengeluaran = {{ dates | tojson }};
+    const values_pengeluaran = {{ values | tojson }};
+    const dates_pemasukan = {{ dates_income | tojson }};
+    const values_pemasukan = {{ values_income | tojson }};
+    const allDates = [...new Set([...dates_pengeluaran, ...dates_pemasukan])].sort();
+
+    const datasetPengeluaran = allDates.map(date => {
+        const i = dates_pengeluaran.indexOf(date);
+        return i !== -1 ? values_pengeluaran[i] : 0;
+    });
+
+    const datasetPemasukan = allDates.map(date => {
+        const i = dates_pemasukan.indexOf(date);
+        return i !== -1 ? values_pemasukan[i] : 0;
+    });
+
+    function buatChart() {
+        const style = getComputedStyle(document.documentElement);
+        const textColor = style.getPropertyValue('--text').trim();
+        const gridColor = style.getPropertyValue('--card-border').trim();
+        const bgColor = style.getPropertyValue('--card-bg').trim();
+
+        const ctx = document.getElementById('trendChart');
+        if (ctx.chartInstance) ctx.chartInstance.destroy();
+
+        ctx.chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: allDates,
+                datasets: [
+                    {
+                        label: 'Pengeluaran (IDR)',
+                        data: datasetPengeluaran,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderColor: '#ef4444',
+                        borderWidth: 2,
+                        maxBarThickness: 50,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Pemasukan (IDR)',
+                        data: datasetPemasukan,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        maxBarThickness: 50,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: textColor,
+                            font: { size: 13, weight: 600 },
+                            padding: 12
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: bgColor,
+                        titleColor: textColor,
+                        bodyColor: textColor,
+                        borderColor: gridColor,
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y || 0;
+                                return `${label}: Rp ${value.toLocaleString('id-ID')}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: textColor, font: { size: 12 } },
+                        grid: { color: gridColor, display: false }
+                    },
+                    y: {
+                        ticks: {
+                            color: textColor,
+                            font: { size: 12 },
+                            callback: function (value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        },
+                        grid: { color: gridColor }
+                    }
+                }
+            }
+        });
+    }
+
+    buatChart();
+
+    new MutationObserver(() => buatChart())
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+</script>
+
+{% endblock %}
