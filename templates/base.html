@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="id" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,14 +24,40 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-          <div class="collapse navbar-collapse" id="navmenu">
+            <div class="collapse navbar-collapse" id="navmenu">
                 <ul class="navbar-nav ms-auto me-3">
                     <li class="nav-item"><a class="nav-link {% if request.endpoint=='index' %}active{% endif %}" href="{{ url_for('index') }}">Beranda</a></li>
+                    
+                    {% if session.username %}
+                    <!-- Menu untuk user yang sudah login -->
                     <li class="nav-item"><a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dasbor</a></li>
                     <li class="nav-item"><a class="nav-link {% if request.endpoint=='history' %}active{% endif %}" href="{{ url_for('history') }}">Riwayat</a></li>
                     <li class="nav-item"><a class="nav-link {% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">Analitik</a></li>
                     <li class="nav-item"><a class="nav-link {% if request.endpoint=='guide' %}active{% endif %}" href="{{ url_for('guide') }}">Panduan</a></li>
+                    {% endif %}
                 </ul>
+
+                <div class="navbar-nav">
+                    {% if session.username %}
+                    <!-- User sudah login -->
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            👋 {{ session.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <!-- User belum login -->
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('login') }}">Login</a>
+                        <a class="btn btn-primary btn-sm" href="{{ url_for('register') }}">Daftar</a>
+                    </div>
+                    {% endif %}
+                </div>
 
                 <button id="themeToggle" type="button" aria-label="Toggle theme">
                     <span id="themeIcon"></span>
