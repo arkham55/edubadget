@@ -65,16 +65,16 @@
                             👋 {{ session.username }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">📊 Dashboard</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">🚪 Logout</a></li>
                         </ul>
                     </div>
                     {% else %}
-                    <!-- User belum login -->
-                    <div class="d-flex gap-2">
-                        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('login') }}">Login</a>
-                        <a class="btn btn-primary btn-sm" href="{{ url_for('register') }}">Daftar</a>
+                    <!-- User belum login - TOMBOL BARU -->
+                    <div class="nav-auth-buttons">
+                        <a class="btn-nav-login" href="{{ url_for('login') }}">🔐 Login</a>
+                        <a class="btn-nav-register pulse" href="{{ url_for('register') }}">Daftar 🚀</a>
                     </div>
                     {% endif %}
                 </div>
@@ -109,6 +109,17 @@
             localStorage.setItem("theme", newTheme);
             
             console.log("Theme switched to:", newTheme);
+        });
+
+        // Add animation to register button on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerBtn = document.querySelector('.btn-nav-register');
+            if (registerBtn) {
+                // Remove pulse animation after 5 seconds
+                setTimeout(() => {
+                    registerBtn.classList.remove('pulse');
+                }, 5000);
+            }
         });
     </script>
 </body>
