@@ -560,21 +560,49 @@ def edit(id):
 def analytics():
     """Simplified analytics untuk deployment"""
     try:
-        # Get parameters
-        target_nabung_input = request.args.get("target") or request.form.get("target")
+        print("🔍 DEBUG: Masuk ke route analytics")
+        
+        # Get parameters dengan default values
+        target_nabung_input = request.args.get("target") or request.form.get("target", "0")
         lifestyle = (request.args.get("lifestyle") or request.form.get("lifestyle") or "moderat").lower()
         
-        # Fetch data
-        summary, today_spending_raw, weekly_spending, kategori_rows = fetch_all_transactions_data()
+        print(f"🔍 DEBUG: Parameters - target: {target_nabung_input}, lifestyle: {lifestyle}")
         
-        # Basic calculations
-        pemasukan = to_dec(summary.get("pemasukan", 0))
-        pengeluaran = to_dec(summary.get("pengeluaran", 0))
-        sisa = pemasukan - pengeluaran
+        # Fetch data dengan error handling
+        try:
+            summary, today_spending_raw, weekly_spending, kategori_rows = fetch_all_transactions_data()
+            print(f"🔍 DEBUG: Data fetched - summary: {summary}")
+        except Exception as fetch_error:
+            print(f"❌ ERROR in fetch_all_transactions_data: {fetch_error}")
+            # Fallback data
+            summary = {"pemasukan": 0, "pengeluaran": 0}
+            today_spending_raw = {}
+            weekly_spending = {}
+            kategori_rows = []
         
-        days_in_month = calendar.monthrange(datetime.date.today().year, datetime.date.today().month)[1]
-        current_day = datetime.date.today().day
-        days_remaining = days_in_month - current_day
+        # Basic calculations dengan error handling
+        try:
+            pemasukan = to_dec(summary.get("pemasukan", 0))
+            pengeluaran = to_dec(summary.get("pengeluaran", 0))
+            sisa = pemasukan - pengeluaran
+            
+            print(f"🔍 DEBUG: Calculations - pemasukan: {pemasukan}, pengeluaran: {pengeluaran}, sisa: {sisa}")
+        except Exception as calc_error:
+            print(f"❌ ERROR in calculations: {calc_error}")
+            pemasukan = to_dec(0)
+            pengeluaran = to_dec(0)
+            sisa = to_dec(0)
+        
+        # Date calculations
+        try:
+            today = datetime.date.today()
+            days_in_month = calendar.monthrange(today.year, today.month)[1]
+            current_day = today.day
+            days_remaining = days_in_month - current_day
+        except:
+            days_in_month = 30
+            current_day = 1
+            days_remaining = 29
         
         # Target nabung
         try:
@@ -585,13 +613,36 @@ def analytics():
         if target_nabung == 0 and pemasukan > 0:
             target_nabung = (pemasukan * Decimal('0.15')).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
         
-        # ML Prediction
+        # ML Prediction dengan error handling
         try:
             income_idr = float(pemasukan)
         except:
             income_idr = 0.0
         
-        ml_budget = recommend_budget_ml_cached(income_idr, lifestyle)
+        try:
+            ml_budget = recommend_budget_ml_cached(income_idr, lifestyle)
+            print(f"🔍 DEBUG: ML budget generated - items: {len(ml_budget)}")
+        except Exception as ml_error:
+            print(f"❌ ERROR in ML prediction: {ml_error}")
+            ml_budget = build_fixed_recommendation(income_idr, lifestyle)
+        
+        # === FIX: Add daily_status calculation ===
+        try:
+            daily_budget = (pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining) if days_remaining > 0 else Decimal(0)
+            daily_status = {
+                'budget': float(daily_budget),
+                'remaining': days_remaining,
+                'is_safe': daily_budget >= 0
+            }
+        except Exception as daily_error:
+            print(f"❌ ERROR in daily_status calculation: {daily_error}")
+            daily_status = {
+                'budget': 0,
+                'remaining': days_remaining,
+                'is_safe': False
+            }
+        
+        print("🔍 DEBUG: Berhasil memproses semua data, menuju render template")
         
         return render_template("analytics.html",
             pemasukan=float(pemasukan),
@@ -603,11 +654,16 @@ def analytics():
             lifestyle=lifestyle,
             days_remaining=days_remaining,
             current_day=current_day,
-            days_in_month=days_in_month
+            days_in_month=days_in_month,
+            daily_status=daily_status  # <- VARIABLE YANG DIBUTUHKAN
         )
+        
     except Exception as e:
+        print(f"❌ CRITICAL ERROR in analytics route: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return f"Error in analytics: {str(e)}", 500
-
+        
 @app.route("/guide")
 def guide():
     return render_template("guide.html")
