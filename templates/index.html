@@ -155,24 +155,23 @@
 
     <div class="p-4 rounded about-box">
         <div class="row align-items-start g-4">
-
-            <div class="col-md-4 col-lg-3">
-                <div class="about-image-wrapper text-center">
-                    <div class="image-container">
-                        <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
-                             alt="Arsya Khalid Mahardika" 
-                             class="about-image">
-                        <div class="image-overlay">
-                            <span class="overlay-text">👋 Hello!</span>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <h5 class="fw-bold mb-1">Arsya Khalid Mahardika</h5>
-                        <p class="text-muted small mb-0">Developer & Founder</p>
-                    </div>
+            <!-- Kolom untuk foto -->
+            <div class="col-md-4 col-lg-3 text-center">
+                <div class="developer-photo mb-3">
+                    <img src="{{ url_for('static', filename='images/developer-photo.jpg') }}" 
+                         alt="Arsya Khalid Mahardika" 
+                         class="img-fluid rounded shadow">
                 </div>
+                <h5 class="fw-bold mb-1">Arsya Khalid Mahardika</h5>
+                <p class="text-muted small mb-2">Developer & Founder</p>
+                <p class="small mb-0">
+                    <strong>NIM:</strong> 23051130041<br>
+                    <strong>Prodi:</strong> Teknologi Informasi<br>
+                    <strong>Universitas:</strong> UNY
+                </p>
             </div>
 
+            <!-- Kolom untuk konten -->
             <div class="col-md-8 col-lg-9">
                 <div class="about-content">
                     <h3 class="fw-bold mb-3">Apa itu EduBudget?</h3>
@@ -186,32 +185,6 @@
                         mendapatkan insight pengeluaran per kategori, dan melihat prediksi keuangan bulanan. 
                         Semua dalam satu platform yang mudah digunakan dan mobile-friendly.
                     </p>
-                    
-                    <div class="mt-4 p-3 rounded developer-box">
-                        <h6 class="fw-bold mb-3">👨‍💻 Informasi Developer</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-2">
-                                    <span class="fw-medium">Nama:</span><br>
-                                    <strong>Arsya Khalid Mahardika</strong>
-                                </p>
-                                <p class="mb-2">
-                                    <span class="fw-medium">NIM:</span><br>
-                                    <strong>23051130041</strong>
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-2">
-                                    <span class="fw-medium">Program Studi:</span><br>
-                                    <strong>Teknologi Informasi</strong>
-                                </p>
-                                <p class="mb-0">
-                                    <span class="fw-medium">Universitas:</span><br>
-                                    <strong>Universitas Negeri Yogyakarta</strong>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="text-center text-md-start mt-4">
                         <a href="{{ url_for('guide') }}" class="btn btn-outline-info px-4 py-2 fw-bold me-2">
@@ -225,7 +198,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </section>
