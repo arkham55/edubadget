@@ -158,12 +158,17 @@
 
             <div class="col-md-4 col-lg-3">
                 <div class="about-image-wrapper text-center">
-                    <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
-                         alt="Arsya Khalid Mahardika" 
-                         class="about-image rounded-circle">
+                    <div class="image-container">
+                        <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
+                             alt="Arsya Khalid Mahardika" 
+                             class="about-image">
+                        <div class="image-overlay">
+                            <span class="overlay-text">👋 Hello!</span>
+                        </div>
+                    </div>
                     <div class="mt-3">
                         <h5 class="fw-bold mb-1">Arsya Khalid Mahardika</h5>
-                        <p class="text-muted small mb-0">Developer</p>
+                        <p class="text-muted small mb-0">Developer & Founder</p>
                     </div>
                 </div>
             </div>
