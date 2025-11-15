@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_mysqldb import MySQL
 from dotenv import load_dotenv
 from math import ceil
-from app import app  
 import os
 import requests
 import joblib
