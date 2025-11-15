@@ -90,6 +90,12 @@ app.config["MYSQL_DB"] = "edubudget"
 
 mysql = MySQL(app)
 
+# Pakai DATABASE_URL dari Environment Variables
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
 # ✅ REGISTER EMOJI FUNCTION SETELAH app DIBUAT
 app.jinja_env.globals.update(get_emoji=get_category_emoji)
 
