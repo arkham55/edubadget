@@ -146,52 +146,29 @@
 
 <hr class="custom-divider">
 
-<!-- Tentang EduBudget -->
+<!-- Tentang EduBudget - Versi Sederhana seperti PodMatch -->
 <section class="container my-5" id="about">
-    <h2 class="fw-bold text-center mb-3">Tentang EduBudget</h2>
-    <p class="text-center mb-5 section-subtitle">
-        Platform manajemen keuangan yang dirancang khusus untuk mahasiswa Indonesia
-    </p>
-
-    <div class="p-4 rounded about-box">
-        <div class="row align-items-start g-4">
-            <!-- Kolom untuk foto saja -->
-            <div class="col-md-3 text-center">
-                <div class="developer-photo">
-                    <img src="{{ url_for('static', filename='img/arsya.jpg') }}" 
-                         alt="Arsya Khalid Mahardika" 
-                         class="img-fluid rounded shadow">
-                </div>
-            </div>
-
-            <!-- Kolom untuk informasi developer -->
-            <div class="col-md-3">
-                <div class="developer-info">
-                    <h5 class="fw-bold mb-2">Arsya Khalid Mahardika</h5>
-                    <div class="developer-details">
-                        <p class="mb-1"><strong>NIM:</strong> 23051130041</p>
-                        <p class="mb-1"><strong>Program Studi:</strong> Teknologi Informasi</p>
-                        <p class="mb-0"><strong>Universitas:</strong> Universitas Negeri Yogyakarta</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kolom untuk konten tentang aplikasi -->
-            <div class="col-md-6">
-                <div class="about-content">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="about-simple">
+                <!-- Judul Section -->
+                <h2 class="fw-bold text-center mb-4">Tentang EduBudget</h2>
+                
+                <!-- Konten utama -->
+                <div class="simple-content">
                     <h3 class="fw-bold mb-3">Apa itu EduBudget?</h3>
-                    <p class="about-text">
+                    <p class="mb-4">
                         <strong>EduBudget</strong> adalah aplikasi web gratis yang membantu mahasiswa mengelola keuangan dengan lebih terarah dan cerdas. 
                         Dilengkapi dengan fitur tracking otomatis, analisis prediksi pengeluaran menggunakan machine learning, 
                         serta rekomendasi budget yang disesuaikan dengan gaya hidup mahasiswa.
                     </p>
-                    <p class="about-text">
+                    <p class="mb-4">
                         Dengan EduBudget, kamu bisa memantau pemasukan dan pengeluaran harian, mengatur target menabung, 
                         mendapatkan insight pengeluaran per kategori, dan melihat prediksi keuangan bulanan. 
                         Semua dalam satu platform yang mudah digunakan dan mobile-friendly.
                     </p>
-
-                    <div class="text-center text-md-start mt-4">
+                    
+                    <div class="text-center mb-5">
                         <a href="{{ url_for('guide') }}" class="btn btn-outline-info px-4 py-2 fw-bold me-2">
                             📖 Pelajari Cara Menggunakan
                         </a>
@@ -200,6 +177,20 @@
                             🚀 Mulai Sekarang
                         </a>
                         {% endif %}
+                    </div>
+                </div>
+
+                <!-- Garis pemisah -->
+                <hr class="my-5">
+
+                <!-- Informasi Developer - Sederhana seperti contoh -->
+                <div class="developer-simple text-center">
+                    <h4 class="fw-bold mb-3">Dibuat oleh</h4>
+                    <div class="developer-info-simple">
+                        <h5 class="fw-bold text-primary mb-2">Arsya Khalid Mahardika</h5>
+                        <p class="mb-1"><strong>NIM:</strong> 23051130041</p>
+                        <p class="mb-1"><strong>Program Studi:</strong> Teknologi Informasi</p>
+                        <p class="mb-0"><strong>Universitas:</strong> Universitas Negeri Yogyakarta</p>
                     </div>
                 </div>
             </div>
