@@ -770,9 +770,160 @@ def analytics():
                 prediction_status = 'Aman'
                 prediction_message = 'Pola spending minggu ini sehat dan terkendali'
         
-        # 5. budget_recommendations & total_saving_potential
+        # 5. budget_recommendations & total_saving_potential - FIXED VERSION
         budget_recommendations = []
         total_saving_potential = 0
+        
+        # Hanya generate budget recommendations jika ada pemasukan
+        if float(pemasukan) > 0:
+            # Definisikan kategori dan persentase ideal berdasarkan ML budget
+            kategori_ideal = {}
+            for item in ml_budget:
+                category_name = item['category']
+                if category_name == 'Food':
+                    kategori_ideal['makanan/minuman'] = item['fraction']
+                elif category_name == 'Transport':
+                    kategori_ideal['transportasi'] = item['fraction']
+                elif category_name == 'Entertainment':
+                    kategori_ideal['hiburan'] = item['fraction']
+                elif category_name == 'Laundry':
+                    kategori_ideal['laundry'] = item['fraction']
+                elif category_name == 'Savings':
+                    # Skip savings karena sudah ada di target nabung
+                    continue
+                else:
+                    # Untuk kategori lainnya dari ML
+                    kategori_ideal[category_name.lower()] = item['fraction']
+            
+            # Tambahkan kategori default jika ML tidak memberikan semua
+            if 'makanan/minuman' not in kategori_ideal:
+                kategori_ideal['makanan/minuman'] = 0.25
+            if 'transportasi' not in kategori_ideal:
+                kategori_ideal['transportasi'] = 0.15
+            if 'hiburan' not in kategori_ideal:
+                kategori_ideal['hiburan'] = 0.10
+            if 'laundry' not in kategori_ideal:
+                kategori_ideal['laundry'] = 0.05
+            
+            # Ambil data pengeluaran per kategori bulan ini
+            kategori_pengeluaran = {}
+            try:
+                first_day = today.replace(day=1)
+                if today.month == 12:
+                    last_day = today.replace(year=today.year+1, month=1, day=1) - datetime.timedelta(days=1)
+                else:
+                    last_day = today.replace(month=today.month+1, day=1) - datetime.timedelta(days=1)
+                
+                kategori_result = db.session.execute(
+                    db.text("""
+                        SELECT category, COALESCE(SUM(amount_idr), 0) as total
+                        FROM transactions
+                        WHERE type = 'pengeluaran' 
+                        AND date >= :first_day AND date <= :last_day
+                        GROUP BY category
+                    """),
+                    {'first_day': first_day, 'last_day': last_day}
+                )
+                
+                for row in kategori_result:
+                    kategori_name = row[0].lower()
+                    kategori_pengeluaran[kategori_name] = float(row[1])
+                    print(f"🔍 DEBUG: Kategori {kategori_name}: Rp {row[1]}")
+                    
+            except Exception as e:
+                print(f"❌ ERROR fetching kategori pengeluaran: {e}")
+            
+            # Generate recommendations untuk setiap kategori
+            for kategori, persentase_ideal in kategori_ideal.items():
+                ideal_bulanan = float(pemasukan) * persentase_ideal
+                ideal_harian = ideal_bulanan / days_in_month
+                ideal_mingguan = ideal_bulanan / 4
+                
+                # Pengeluaran aktual bulan ini
+                pengeluaran_aktual = kategori_pengeluaran.get(kategori, 0)
+                pengeluaran_harian_aktual = pengeluaran_aktual / current_day if current_day > 0 else 0
+                
+                # Hitung sisa budget
+                sisa_budget = ideal_bulanan - pengeluaran_aktual
+                sisa_harian = sisa_budget / days_remaining if days_remaining > 0 else 0
+                
+                # Tentukan status
+                if pengeluaran_aktual == 0:
+                    status = 'success'
+                elif pengeluaran_aktual <= ideal_bulanan * 0.7:
+                    status = 'success'
+                elif pengeluaran_aktual <= ideal_bulanan:
+                    status = 'warning'
+                else:
+                    status = 'over'
+                
+                # Hitung potensi hemat
+                potensi_hemat = max(0, pengeluaran_aktual - ideal_bulanan)
+                total_saving_potential += potensi_hemat
+                
+                # Pengeluaran hari ini untuk kategori ini
+                pengeluaran_hari_ini = 0
+                try:
+                    today_category_result = db.session.execute(
+                        db.text("""
+                            SELECT COALESCE(SUM(amount_idr), 0)
+                            FROM transactions
+                            WHERE type = 'pengeluaran' 
+                            AND LOWER(category) = :category
+                            AND date = :today
+                        """),
+                        {'category': kategori, 'today': today}
+                    )
+                    pengeluaran_hari_ini = float(today_category_result.scalar() or 0)
+                except Exception as e:
+                    print(f"❌ ERROR fetching today's expense for {kategori}: {e}")
+                
+                # Status hari ini
+                selisih_hari_ini = pengeluaran_hari_ini - ideal_harian
+                if pengeluaran_hari_ini == 0:
+                    status_hari_ini = 'success'
+                elif pengeluaran_hari_ini <= ideal_harian:
+                    status_hari_ini = 'success'
+                elif pengeluaran_hari_ini <= ideal_harian * 1.3:
+                    status_hari_ini = 'warning'
+                else:
+                    status_hari_ini = 'over'
+                
+                # Tips berdasarkan kategori
+                tips = []
+                if kategori == 'makanan/minuman':
+                    tips = ["Bawa bekal dari kos", "Masak sendiri lebih hemat", "Manfaatkan promo makanan"]
+                elif kategori == 'transportasi':
+                    tips = ["Gunakan transportasi umum", "Berkelompok untuk bagi ongkos", "Plan rute perjalanan"]
+                elif kategori == 'hiburan':
+                    tips = ["Cari hiburan gratis", "Manfaatkan diskon mahasiswa", "Batasi hangout mahal"]
+                elif kategori == 'laundry':
+                    tips = ["Cuci baju sendiri jika memungkinkan", "Kumpulkan baju kotor untuk cuci sekaligus"]
+                elif kategori == 'belanja':
+                    tips = ["Buat list belanja", "Tunggu diskon akhir bulan", "Prioritaskan kebutuhan"]
+                
+                # Format nama kategori untuk display
+                display_category = kategori.title().replace('/', ' / ')
+                
+                budget_recommendations.append({
+                    'category': display_category,
+                    'current_total': pengeluaran_aktual,
+                    'current_daily': pengeluaran_harian_aktual,
+                    'ideal_monthly': ideal_bulanan,
+                    'ideal_daily': ideal_harian,
+                    'ideal_weekly': ideal_mingguan,
+                    'percentage': persentase_ideal * 100,
+                    'remaining_budget': sisa_budget,
+                    'remaining_daily': sisa_harian,
+                    'status': status,
+                    'today_amount': pengeluaran_hari_ini,
+                    'today_diff': selisih_hari_ini,
+                    'today_status': status_hari_ini,
+                    'saving_potential': potensi_hemat,
+                    'tips': tips
+                })
+            
+            print(f"🔍 DEBUG: Generated {len(budget_recommendations)} budget recommendations")
         
         # 6. user_recommendation (dari ML)
         user_recommendation = None
@@ -814,6 +965,9 @@ def analytics():
             }
         
         print("🔍 DEBUG: Berhasil memproses semua data, menuju render template")
+        print(f"🔍 DEBUG: budget_recommendations count: {len(budget_recommendations)}")
+        print(f"🔍 DEBUG: total_saving_potential: {total_saving_potential}")
+        print(f"🔍 DEBUG: user_recommendation: {user_recommendation is not None}")
         
         return render_template("analytics.html",
             pemasukan=float(pemasukan),
