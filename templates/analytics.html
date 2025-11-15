@@ -112,12 +112,20 @@
 </div>
 {% endif %}
 
-<!-- ===== BUDGET HARI INI & WEEKLY PROGRESS ===== -->
+<!-- BUDGET HARI INI & WEEKLY PROGRESS ===== -->
 <div class="row g-3 mb-4">
     <!-- Budget Hari Ini -->
     <div class="col-md-6">
         <div class="p-3 rounded box-section">
-            <h6 class="fw-bold mb-3" style="color:var(--text);">📅 Budget Hari Ini</h6>
+            <!-- HEADER DENGAN PERSEN -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0" style="color:var(--text);">📅 Budget Hari Ini</h6>
+                <span class="budget-percentage fw-bold" 
+                      style="color:{% if daily_status.status == 'success' %}#34d399{% elif daily_status.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    {{ daily_status.percentage }}%
+                </span>
+            </div>
+            
             <div class="mb-2">
                 <small style="color:var(--link);">{{ daily_status.date }}</small>
             </div>
@@ -170,8 +178,15 @@
     <!-- Progress Mingguan -->
     <div class="col-md-6">
         <div class="p-3 rounded box-section">
-            <h6 class="fw-bold mb-3" style="color:var(--text);">📊 Progress Minggu Ke-{{ weekly_progress.week_num }}
-            </h6>
+            <!-- HEADER DENGAN PERSEN -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0" style="color:var(--text);">📊 Progress Minggu Ke-{{ weekly_progress.week_num }}</h6>
+                <span class="budget-percentage fw-bold" 
+                      style="color:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    {{ weekly_progress.percentage }}%
+                </span>
+            </div>
+            
             <div class="mb-2">
                 <small style="color:var(--link);">Target vs Realisasi</small>
             </div>
