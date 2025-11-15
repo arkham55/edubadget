@@ -626,20 +626,191 @@ def analytics():
             print(f"❌ ERROR in ML prediction: {ml_error}")
             ml_budget = build_fixed_recommendation(income_idr, lifestyle)
         
-        # === FIX: Add daily_status calculation ===
+        # === VARIABLES UNTUK TEMPLATE ===
+        
+        # 1. daily_status
         try:
-            daily_budget = (pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining) if days_remaining > 0 else Decimal(0)
+            # Hitung budget harian
+            daily_budget_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining)) if days_remaining > 0 else 0
+            
+            # Hitung pengeluaran hari ini
+            today_expense_result = db.session.execute(
+                db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pengeluaran' AND date = :today"),
+                {'today': today}
+            )
+            today_spent = float(today_expense_result.scalar() or 0)
+            
+            # Hitung sisa budget hari ini
+            daily_remaining = daily_budget_limit - today_spent
+            
+            # Tentukan status
+            if today_spent == 0:
+                daily_status_value = 'success'
+            elif today_spent <= daily_budget_limit * 0.7:
+                daily_status_value = 'success'
+            elif today_spent <= daily_budget_limit:
+                daily_status_value = 'warning'
+            else:
+                daily_status_value = 'danger'
+            
+            # Hitung persentase
+            daily_percentage = (today_spent / daily_budget_limit * 100) if daily_budget_limit > 0 else 0
+            
             daily_status = {
-                'budget': float(daily_budget),
-                'remaining': days_remaining,
-                'is_safe': daily_budget >= 0
+                'date': today.strftime("%d %B %Y"),
+                'budget_limit': daily_budget_limit,
+                'spent': today_spent,
+                'remaining': daily_remaining,
+                'status': daily_status_value,
+                'percentage': min(100, daily_percentage)
             }
         except Exception as daily_error:
             print(f"❌ ERROR in daily_status calculation: {daily_error}")
             daily_status = {
-                'budget': 0,
-                'remaining': days_remaining,
-                'is_safe': False
+                'date': datetime.date.today().strftime("%d %B %Y"),
+                'budget_limit': 0,
+                'spent': 0,
+                'remaining': 0,
+                'status': 'success',
+                'percentage': 0
+            }
+        
+        # 2. weekly_progress
+        try:
+            # Hitung minggu ke berapa
+            week_num = (current_day - 1) // 7 + 1
+            
+            # Hitung target mingguan (25% dari pemasukan bulanan)
+            weekly_target = float(pemasukan * Decimal('0.25'))
+            
+            # Hitung pengeluaran minggu ini
+            start_of_week = today - datetime.timedelta(days=today.weekday())
+            end_of_week = start_of_week + datetime.timedelta(days=6)
+            
+            weekly_expense_result = db.session.execute(
+                db.text("""
+                    SELECT COALESCE(SUM(amount_idr), 0) 
+                    FROM transactions 
+                    WHERE type = 'pengeluaran' 
+                    AND date >= :start_date 
+                    AND date <= :end_date
+                """),
+                {'start_date': start_of_week, 'end_date': end_of_week}
+            )
+            weekly_spending = float(weekly_expense_result.scalar() or 0)
+            
+            # Hitung sisa budget mingguan
+            weekly_remaining = weekly_target - weekly_spending
+            
+            # Tentukan status
+            if weekly_spending == 0:
+                weekly_status = 'success'
+            elif weekly_spending <= weekly_target * 0.7:
+                weekly_status = 'success'
+            elif weekly_spending <= weekly_target:
+                weekly_status = 'warning'
+            else:
+                weekly_status = 'danger'
+            
+            # Hitung persentase
+            weekly_percentage = (weekly_spending / weekly_target * 100) if weekly_target > 0 else 0
+            
+            weekly_progress = {
+                'week_num': week_num,
+                'target': weekly_target,
+                'spending': weekly_spending,
+                'remaining': weekly_remaining,
+                'status': weekly_status,
+                'percentage': min(100, weekly_percentage)
+            }
+        except Exception as weekly_error:
+            print(f"❌ ERROR in weekly_progress calculation: {weekly_error}")
+            weekly_progress = {
+                'week_num': 1,
+                'target': 0,
+                'spending': 0,
+                'remaining': 0,
+                'status': 'success',
+                'percentage': 0
+            }
+        
+        # 3. emergency_warning (jika diperlukan)
+        emergency_warning = None
+        if pemasukan > 0 and pengeluaran > 0:
+            spending_ratio = float(pengeluaran / pemasukan)
+            if spending_ratio > 0.9:
+                daily_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining)) if days_remaining > 0 else 0
+                emergency_warning = {
+                    'level': 'critical',
+                    'message': 'Pengeluaran sudah mencapai 90% dari pemasukan!',
+                    'daily_limit': daily_limit
+                }
+            elif spending_ratio > 0.7:
+                daily_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining)) if days_remaining > 0 else 0
+                emergency_warning = {
+                    'level': 'warning',
+                    'message': 'Pengeluaran sudah mencapai 70% dari pemasukan.',
+                    'daily_limit': daily_limit
+                }
+        
+        # 4. prediction_message & prediction_status
+        prediction_message = None
+        prediction_status = None
+        if weekly_progress['spending'] > 0:
+            weekly_spending_rate = weekly_progress['spending'] / (current_day / 7)
+            monthly_projection = weekly_spending_rate * 4
+            
+            if monthly_projection > float(pemasukan) * 0.9:
+                prediction_status = 'Boros'
+                prediction_message = 'Pola spending minggu ini menunjukkan potensi over budget bulanan'
+            elif monthly_projection > float(pemasukan) * 0.7:
+                prediction_status = 'Waspada'
+                prediction_message = 'Pola spending masih dalam batas wajar, tapi perlu diperhatikan'
+            else:
+                prediction_status = 'Aman'
+                prediction_message = 'Pola spending minggu ini sehat dan terkendali'
+        
+        # 5. budget_recommendations & total_saving_potential
+        budget_recommendations = []
+        total_saving_potential = 0
+        
+        # 6. user_recommendation (dari ML)
+        user_recommendation = None
+        if income_idr > 0:
+            # Buat user_recommendation dari ML budget
+            lifestyle_descriptions = {
+                'hemat': 'Mode hemat fokus pada penghematan maksimal dan prioritas kebutuhan pokok',
+                'moderat': 'Mode moderat menyeimbangkan antara kebutuhan dan keinginan dengan bijak', 
+                'aktif': 'Mode aktif memberikan ruang lebih untuk pengembangan diri dan sosial'
+            }
+            
+            lifestyle_tips = {
+                'hemat': [
+                    'Prioritaskan kebutuhan pokok: makan, transport, tagihan',
+                    'Batasi makan di luar maksimal 2x seminggu',
+                    'Manfaatkan promo dan diskon mahasiswa',
+                    'Bawa bekal dari kos untuk hemat uang makan'
+                ],
+                'moderat': [
+                    'Alokasikan 30% untuk hiburan dan sosial',
+                    'Tetap prioritaskan tabungan 20% dari pemasukan',
+                    'Plan ahead untuk kegiatan bulanan',
+                    'Sisihkan dana untuk self-improvement'
+                ],
+                'aktif': [
+                    'Investasi dalam skill development',
+                    'Network building dengan teman dan komunitas',
+                    'Eksplorasi kegiatan baru yang produktif',
+                    'Tetap monitor pengeluaran sosial'
+                ]
+            }
+            
+            user_recommendation = {
+                'lifestyle': lifestyle,
+                'income': income_idr,
+                'recommendations': ml_budget,
+                'description': lifestyle_descriptions.get(lifestyle, 'Mode pengelolaan keuangan personal'),
+                'tips': lifestyle_tips.get(lifestyle, [])
             }
         
         print("🔍 DEBUG: Berhasil memproses semua data, menuju render template")
@@ -655,7 +826,16 @@ def analytics():
             days_remaining=days_remaining,
             current_day=current_day,
             days_in_month=days_in_month,
-            daily_status=daily_status  # <- VARIABLE YANG DIBUTUHKAN
+            
+            # Variabel-variabel baru untuk template
+            daily_status=daily_status,
+            weekly_progress=weekly_progress,
+            emergency_warning=emergency_warning,
+            prediction_message=prediction_message,
+            prediction_status=prediction_status,
+            budget_recommendations=budget_recommendations,
+            total_saving_potential=total_saving_potential,
+            user_recommendation=user_recommendation
         )
         
     except Exception as e:
