@@ -35,14 +35,15 @@ class User(db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(50))
-    password = db.Column(db.String(255))
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     category = db.Column(db.String(50))
     type = db.Column(db.String(20))  # 'pengeluaran' atau 'pemasukan'
     amount = db.Column(db.Numeric(12, 2))
@@ -55,6 +56,20 @@ class Transaction(db.Model):
 with app.app_context():
     db.create_all()
     print("✅ Database tables created/verified!")
+
+# ===== AUTHENTICATION HELPERS =====
+def hash_password(password):
+    """Hash password untuk keamanan"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def login_required(f):
+    """Decorator untuk memastikan user sudah login"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ===== LAZY LOAD ML MODEL =====
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -249,17 +264,8 @@ def to_dec(v):
     """Convert to Decimal safely"""
     return Decimal(str(v or 0))
 
-def categorize_student(name, student_categories):
-    """Categorize transaction by name"""
-    n = (name or "").lower()
-    for k, keys in student_categories.items():
-        for kw in keys:
-            if kw in n:
-                return k
-    return 'lainnya'
-
-def fetch_all_transactions_data():
-    """Fetch data menggunakan SQLAlchemy"""
+def fetch_all_transactions_data(user_id):
+    """Fetch data menggunakan SQLAlchemy dengan user_id"""
     summary = {}
     today_spending = {}
     weekly_data = {}
@@ -273,36 +279,36 @@ def fetch_all_transactions_data():
         last_day = today.replace(month=today.month+1, day=1) - datetime.timedelta(days=1)
     
     try:
-        # Query 1: Summary
+        # Query 1: Summary - HANYA untuk user_id tertentu
         result = db.session.execute(
             db.text("""
                 SELECT type, COALESCE(SUM(amount_idr), 0) as total
                 FROM transactions
-                WHERE date >= :first_day AND date <= :last_day
+                WHERE user_id = :user_id AND date >= :first_day AND date <= :last_day
                 GROUP BY type
             """),
-            {'first_day': first_day, 'last_day': last_day}
+            {'user_id': user_id, 'first_day': first_day, 'last_day': last_day}
         )
         
         for row in result:
             summary[row[0]] = to_dec(row[1])
         
-        # Query 2: Today's spending
+        # Query 2: Today's spending - HANYA untuk user_id tertentu
         result = db.session.execute(
             db.text("""
                 SELECT category, COALESCE(SUM(amount_idr), 0) as total
                 FROM transactions
-                WHERE type = 'pengeluaran' AND date = :today
+                WHERE user_id = :user_id AND type = 'pengeluaran' AND date = :today
                 GROUP BY category
             """),
-            {'today': today}
+            {'user_id': user_id, 'today': today}
         )
         
         for row in result:
             if row[0]:
                 today_spending[row[0]] = to_dec(row[1])
         
-        # Query 3: Category totals
+        # Query 3: Category totals - HANYA untuk user_id tertentu
         result = db.session.execute(
             db.text("""
                 SELECT 
@@ -311,11 +317,11 @@ def fetch_all_transactions_data():
                     COUNT(*) as tx_count,
                     COALESCE(AVG(amount_idr), 0) as avg_tx
                 FROM transactions
-                WHERE type = 'pengeluaran' 
+                WHERE user_id = :user_id AND type = 'pengeluaran' 
                   AND date >= :first_day AND date <= :last_day
                 GROUP BY category
             """),
-            {'first_day': first_day, 'last_day': last_day}
+            {'user_id': user_id, 'first_day': first_day, 'last_day': last_day}
         )
         
         for row in result:
@@ -351,39 +357,116 @@ def invalidate_analytics_cache(user_id=None):
 
 @app.route("/")
 def index():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
     return render_template("index.html")
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        try:
+            username = request.form["username"]
+            password = request.form["password"]
+            
+            # Cek apakah username sudah ada
+            existing_user = db.session.execute(
+                db.text("SELECT id FROM users WHERE username = :username"),
+                {'username': username}
+            ).fetchone()
+            
+            if existing_user:
+                return render_template("register.html", error="Username sudah digunakan")
+            
+            # Hash password dan simpan user baru
+            hashed_password = hash_password(password)
+            
+            db.session.execute(
+                db.text("INSERT INTO users (username, password) VALUES (:username, :password)"),
+                {'username': username, 'password': hashed_password}
+            )
+            db.session.commit()
+            
+            return redirect(url_for("login"))
+            
+        except Exception as e:
+            db.session.rollback()
+            return render_template("register.html", error=f"Error: {str(e)}")
+    
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        try:
+            username = request.form["username"]
+            password = request.form["password"]
+            
+            # Cari user di database
+            user = db.session.execute(
+                db.text("SELECT id, password FROM users WHERE username = :username"),
+                {'username': username}
+            ).fetchone()
+            
+            if user and user.password == hash_password(password):
+                # Login berhasil, simpan di session
+                session['user_id'] = user.id
+                session['username'] = username
+                return redirect(url_for("dashboard"))
+            else:
+                return render_template("login.html", error="Username atau password salah")
+                
+        except Exception as e:
+            return render_template("login.html", error=f"Error: {str(e)}")
+    
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
 @app.route("/dashboard")
+@login_required
 def dashboard():
     try:
-        # Total pemasukan
+        user_id = session['user_id']
+        
+        # Total pemasukan - HANYA untuk user yang login
         pemasukan_result = db.session.execute(
-            db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pemasukan'")
+            db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pemasukan' AND user_id=:user_id"),
+            {'user_id': user_id}
         )
         total_masuk = float(pemasukan_result.scalar() or 0)
         
-        # Total pengeluaran
+        # Total pengeluaran - HANYA untuk user yang login
         pengeluaran_result = db.session.execute(
-            db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pengeluaran'")
+            db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pengeluaran' AND user_id=:user_id"),
+            {'user_id': user_id}
         )
         total_keluar = float(pengeluaran_result.scalar() or 0)
         
         saldo = total_masuk - total_keluar
         
-        # Data kategori
+        # Data kategori - HANYA untuk user yang login
         kategori_result = db.session.execute(
             db.text("""
                 SELECT category, SUM(amount_idr)
                 FROM transactions
-                WHERE type='pengeluaran'
+                WHERE type='pengeluaran' AND user_id=:user_id
                 GROUP BY category
-            """)
+            """),
+            {'user_id': user_id}
         )
         kategori_data = kategori_result.fetchall()
         
-        # Recent transactions
+        # Recent transactions - HANYA untuk user yang login
         transactions_result = db.session.execute(
-            db.text("SELECT * FROM transactions ORDER BY date DESC LIMIT 5")
+            db.text("""
+                SELECT * FROM transactions 
+                WHERE user_id=:user_id 
+                ORDER BY date DESC LIMIT 5
+            """),
+            {'user_id': user_id}
         )
         transactions = transactions_result.fetchall()
         
@@ -394,13 +477,16 @@ def dashboard():
             saldo=saldo,
             transactions=transactions,
             kategori_data=kategori_data,
+            username=session.get('username')
         )
     except Exception as e:
         return f"Error: {str(e)}", 500
 
 @app.route("/add", methods=["POST"])
+@login_required
 def add():
     try:
+        user_id = session['user_id']
         category = request.form["category"]
         type_trans = request.form["type"]
         amount = float(request.form["amount"])
@@ -410,13 +496,14 @@ def add():
         
         amount_idr = convert_to_idr(amount, currency)
         
-        # Insert menggunakan SQLAlchemy
+        # Insert dengan user_id
         db.session.execute(
             db.text("""
-                INSERT INTO transactions (category, type, amount, currency, amount_idr, note, date)
-                VALUES (:category, :type, :amount, :currency, :amount_idr, :note, :date)
+                INSERT INTO transactions (user_id, category, type, amount, currency, amount_idr, note, date)
+                VALUES (:user_id, :category, :type, :amount, :currency, :amount_idr, :note, :date)
             """),
             {
+                'user_id': user_id,
                 'category': category,
                 'type': type_trans,
                 'amount': amount,
@@ -428,7 +515,7 @@ def add():
         )
         db.session.commit()
         
-        invalidate_analytics_cache()
+        invalidate_analytics_cache(user_id)
         return redirect(url_for("dashboard"))
     except Exception as e:
         db.session.rollback()
@@ -443,41 +530,48 @@ def rupiah(value):
         return value
 
 @app.route("/history")
+@login_required
 def history():
     try:
-        # Get transactions
+        user_id = session['user_id']
+        
+        # Get transactions - HANYA untuk user yang login
         transactions_result = db.session.execute(
             db.text("""
                 SELECT id, user_id, category, type, amount, currency, amount_idr, note, date
                 FROM transactions 
+                WHERE user_id=:user_id
                 ORDER BY date DESC
-            """)
+            """),
+            {'user_id': user_id}
         )
         transactions = transactions_result.fetchall()
         
-        # Data untuk grafik pengeluaran
+        # Data untuk grafik pengeluaran - HANYA untuk user yang login
         pengeluaran_result = db.session.execute(
             db.text("""
                 SELECT date, SUM(amount_idr)
                 FROM transactions
-                WHERE type='pengeluaran'
+                WHERE type='pengeluaran' AND user_id=:user_id
                 GROUP BY date
                 ORDER BY date
-            """)
+            """),
+            {'user_id': user_id}
         )
         pengeluaran_data = pengeluaran_result.fetchall()
         dates = [row[0].strftime("%Y-%m-%d") for row in pengeluaran_data]
         values = [float(row[1]) for row in pengeluaran_data]
         
-        # Data untuk grafik pemasukan
+        # Data untuk grafik pemasukan - HANYA untuk user yang login
         pemasukan_result = db.session.execute(
             db.text("""
                 SELECT date, SUM(amount_idr)
                 FROM transactions
-                WHERE type='pemasukan'
+                WHERE type='pemasukan' AND user_id=:user_id
                 GROUP BY date
                 ORDER BY date
-            """)
+            """),
+            {'user_id': user_id}
         )
         pemasukan_data = pemasukan_result.fetchall()
         dates_income = [row[0].strftime("%Y-%m-%d") for row in pemasukan_data]
@@ -490,28 +584,36 @@ def history():
             values=values,
             dates_income=dates_income,
             values_income=values_income,
+            username=session.get('username')
         )
     except Exception as e:
         return f"Error: {str(e)}", 500
 
 @app.route("/delete/<int:id>", methods=["GET"])
+@login_required
 def delete(id):
     try:
+        user_id = session['user_id']
+        
+        # Hapus HANYA jika transaksi milik user yang login
         db.session.execute(
-            db.text("DELETE FROM transactions WHERE id=:id"),
-            {'id': id}
+            db.text("DELETE FROM transactions WHERE id=:id AND user_id=:user_id"),
+            {'id': id, 'user_id': user_id}
         )
         db.session.commit()
         
-        invalidate_analytics_cache()
+        invalidate_analytics_cache(user_id)
         return redirect(url_for("history"))
     except Exception as e:
         db.session.rollback()
         return f"Error: {str(e)}", 500
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
+@login_required
 def edit(id):
     try:
+        user_id = session['user_id']
+        
         if request.method == "POST":
             category = request.form["category"]
             type_trans = request.form["type"]
@@ -522,11 +624,12 @@ def edit(id):
             
             amount_idr = convert_to_idr(amount, currency)
             
+            # Update HANYA jika transaksi milik user yang login
             db.session.execute(
                 db.text("""
                     UPDATE transactions SET category=:category, type=:type, amount=:amount, 
                     currency=:currency, amount_idr=:amount_idr, note=:note, date=:date 
-                    WHERE id=:id
+                    WHERE id=:id AND user_id=:user_id
                 """),
                 {
                     'category': category,
@@ -536,30 +639,36 @@ def edit(id):
                     'amount_idr': amount_idr,
                     'note': note,
                     'date': date,
-                    'id': id
+                    'id': id,
+                    'user_id': user_id
                 }
             )
             db.session.commit()
             
-            invalidate_analytics_cache()
+            invalidate_analytics_cache(user_id)
             return redirect(url_for("history"))
         
         # GET request - show edit form
         transaction_result = db.session.execute(
-            db.text("SELECT * FROM transactions WHERE id=:id"),
-            {'id': id}
+            db.text("SELECT * FROM transactions WHERE id=:id AND user_id=:user_id"),
+            {'id': id, 'user_id': user_id}
         )
         transaction = transaction_result.fetchone()
         
+        if not transaction:
+            return "Transaksi tidak ditemukan", 404
+            
         return render_template("edit.html", transaction=transaction)
     except Exception as e:
         db.session.rollback()
         return f"Error: {str(e)}", 500
 
 @app.route("/analytics", methods=["GET", "POST"])
+@login_required
 def analytics():
     """Simplified analytics untuk deployment"""
     try:
+        user_id = session['user_id']
         print("🔍 DEBUG: Masuk ke route analytics")
         
         # Get parameters dengan default values
@@ -568,9 +677,9 @@ def analytics():
         
         print(f"🔍 DEBUG: Parameters - target: {target_nabung_input}, lifestyle: {lifestyle}")
         
-        # Fetch data dengan error handling
+        # Fetch data dengan error handling - SEKARANG DENGAN user_id
         try:
-            summary, today_spending_raw, weekly_spending, kategori_rows = fetch_all_transactions_data()
+            summary, today_spending_raw, weekly_spending, kategori_rows = fetch_all_transactions_data(user_id)
             print(f"🔍 DEBUG: Data fetched - summary: {summary}")
         except Exception as fetch_error:
             print(f"❌ ERROR in fetch_all_transactions_data: {fetch_error}")
@@ -633,10 +742,10 @@ def analytics():
             # Hitung budget harian
             daily_budget_limit = float((pemasukan - pengeluaran - target_nabung) / Decimal(days_remaining)) if days_remaining > 0 else 0
             
-            # Hitung pengeluaran hari ini
+            # Hitung pengeluaran hari ini - DENGAN user_id
             today_expense_result = db.session.execute(
-                db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE type='pengeluaran' AND date = :today"),
-                {'today': today}
+                db.text("SELECT COALESCE(SUM(amount_idr), 0) FROM transactions WHERE user_id=:user_id AND type='pengeluaran' AND date = :today"),
+                {'user_id': user_id, 'today': today}
             )
             today_spent = float(today_expense_result.scalar() or 0)
             
@@ -683,7 +792,7 @@ def analytics():
             # Hitung target mingguan (25% dari pemasukan bulanan)
             weekly_target = float(pemasukan * Decimal('0.25'))
             
-            # Hitung pengeluaran minggu ini
+            # Hitung pengeluaran minggu ini - DENGAN user_id
             start_of_week = today - datetime.timedelta(days=today.weekday())
             end_of_week = start_of_week + datetime.timedelta(days=6)
             
@@ -691,11 +800,11 @@ def analytics():
                 db.text("""
                     SELECT COALESCE(SUM(amount_idr), 0) 
                     FROM transactions 
-                    WHERE type = 'pengeluaran' 
+                    WHERE user_id=:user_id AND type = 'pengeluaran' 
                     AND date >= :start_date 
                     AND date <= :end_date
                 """),
-                {'start_date': start_of_week, 'end_date': end_of_week}
+                {'user_id': user_id, 'start_date': start_of_week, 'end_date': end_of_week}
             )
             weekly_spending = float(weekly_expense_result.scalar() or 0)
             
@@ -805,7 +914,7 @@ def analytics():
             if 'laundry' not in kategori_ideal:
                 kategori_ideal['laundry'] = 0.05
             
-            # Ambil data pengeluaran per kategori bulan ini
+            # Ambil data pengeluaran per kategori bulan ini - DENGAN user_id
             kategori_pengeluaran = {}
             try:
                 first_day = today.replace(day=1)
@@ -818,11 +927,11 @@ def analytics():
                     db.text("""
                         SELECT category, COALESCE(SUM(amount_idr), 0) as total
                         FROM transactions
-                        WHERE type = 'pengeluaran' 
+                        WHERE user_id=:user_id AND type = 'pengeluaran' 
                         AND date >= :first_day AND date <= :last_day
                         GROUP BY category
                     """),
-                    {'first_day': first_day, 'last_day': last_day}
+                    {'user_id': user_id, 'first_day': first_day, 'last_day': last_day}
                 )
                 
                 for row in kategori_result:
@@ -861,18 +970,18 @@ def analytics():
                 potensi_hemat = max(0, pengeluaran_aktual - ideal_bulanan)
                 total_saving_potential += potensi_hemat
                 
-                # Pengeluaran hari ini untuk kategori ini
+                # Pengeluaran hari ini untuk kategori ini - DENGAN user_id
                 pengeluaran_hari_ini = 0
                 try:
                     today_category_result = db.session.execute(
                         db.text("""
                             SELECT COALESCE(SUM(amount_idr), 0)
                             FROM transactions
-                            WHERE type = 'pengeluaran' 
+                            WHERE user_id=:user_id AND type = 'pengeluaran' 
                             AND LOWER(category) = :category
                             AND date = :today
                         """),
-                        {'category': kategori, 'today': today}
+                        {'user_id': user_id, 'category': kategori, 'today': today}
                     )
                     pengeluaran_hari_ini = float(today_category_result.scalar() or 0)
                 except Exception as e:
@@ -989,7 +1098,8 @@ def analytics():
             prediction_status=prediction_status,
             budget_recommendations=budget_recommendations,
             total_saving_potential=total_saving_potential,
-            user_recommendation=user_recommendation
+            user_recommendation=user_recommendation,
+            username=session.get('username')
         )
         
     except Exception as e:
@@ -999,8 +1109,9 @@ def analytics():
         return f"Error in analytics: {str(e)}", 500
         
 @app.route("/guide")
+@login_required
 def guide():
-    return render_template("guide.html")
+    return render_template("guide.html", username=session.get('username'))
 
 @app.route('/test-db')
 def test_db():
