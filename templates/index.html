@@ -8,9 +8,15 @@
         EduBudget membantu kamu merencanakan keuangan, menghindari pemborosan, dan
         membangun kebiasaan finansial yang sehat selama masa kuliah.
     </p>
-    <a href="/dashboard" class="btn btn-info mt-4 px-4 py-2 fw-bold shadow">
+    {% if session.username %}
+    <a href="{{ url_for('dashboard') }}" class="btn btn-info mt-4 px-4 py-2 fw-bold shadow">
+        Masuk ke Dashboard →
+    </a>
+    {% else %}
+    <a href="{{ url_for('register') }}" class="btn btn-info mt-4 px-4 py-2 fw-bold shadow">
         Mulai Kelola Sekarang →
     </a>
+    {% endif %}
 </section>
 
 <!-- Kenapa EduBudget -->
@@ -48,9 +54,10 @@
 <!-- Feature Tiles -->
 <section class="container py-5">
     <div class="row g-4 justify-content-center">
-
+        {% if session.username %}
+        <!-- Tampilkan fitur untuk user yang sudah login -->
         <div class="col-md-4 col-lg-3">
-            <a href="/dashboard" class="text-decoration-none">
+            <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
                 <div class="p-4 rounded feature-tile text-center tile-info">
                     <h4 class="fw-bold mb-1">Dasbor</h4>
                     <p class="mb-0">Ringkasan keuangan lengkap</p>
@@ -59,7 +66,7 @@
         </div>
 
         <div class="col-md-4 col-lg-3">
-            <a href="/history" class="text-decoration-none">
+            <a href="{{ url_for('history') }}" class="text-decoration-none">
                 <div class="p-4 rounded feature-tile text-center tile-warning">
                     <h4 class="fw-bold mb-1">Riwayat</h4>
                     <p class="mb-0">Lihat semua transaksi</p>
@@ -68,14 +75,42 @@
         </div>
 
         <div class="col-md-4 col-lg-3">
-            <a href="/analytics" class="text-decoration-none">
+            <a href="{{ url_for('analytics') }}" class="text-decoration-none">
                 <div class="p-4 rounded feature-tile text-center tile-success">
                     <h4 class="fw-bold mb-1">Analitik</h4>
                     <p class="mb-0">Visualisasi dan insight</p>
                 </div>
             </a>
         </div>
+        {% else %}
+        <!-- Tampilkan call-to-action untuk user belum login -->
+        <div class="col-md-4 col-lg-3">
+            <a href="{{ url_for('register') }}" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-info">
+                    <h4 class="fw-bold mb-1">📝 Daftar</h4>
+                    <p class="mb-0">Buat akun gratis</p>
+                </div>
+            </a>
+        </div>
 
+        <div class="col-md-4 col-lg-3">
+            <a href="{{ url_for('login') }}" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-warning">
+                    <h4 class="fw-bold mb-1">🔐 Login</h4>
+                    <p class="mb-0">Masuk ke akunmu</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+            <a href="{{ url_for('guide') }}" class="text-decoration-none">
+                <div class="p-4 rounded feature-tile text-center tile-success">
+                    <h4 class="fw-bold mb-1">📚 Panduan</h4>
+                    <p class="mb-0">Pelajari cara penggunaan</p>
+                </div>
+            </a>
+        </div>
+        {% endif %}
     </div>
 </section>
 
@@ -120,7 +155,7 @@
                     </div>
 
                     <div class="text-center text-md-start mt-4">
-                        <a href="/guide" class="btn btn-outline-info px-4 py-2 fw-bold">
+                        <a href="{{ url_for('guide') }}" class="btn btn-outline-info px-4 py-2 fw-bold">
                             📖 Pelajari Cara Menggunakan →
                         </a>
                     </div>
