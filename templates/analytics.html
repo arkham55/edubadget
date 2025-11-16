@@ -500,4 +500,49 @@
     console.log('Analytics page loaded:', new Date().toISOString());
 </script>
 
+<script>
+// ===== FIX PROGRESS BAR RENDERING =====
+function fixProgressBars() {
+    const progressBars = document.querySelectorAll('.analytics-progress-bar');
+    
+    progressBars.forEach(bar => {
+        // Dapatkan lebar aktual dari style attribute
+        const style = bar.getAttribute('style');
+        if (style && style.includes('width:')) {
+            const widthMatch = style.match(/width:\s*([\d.]+)%/);
+            if (widthMatch) {
+                const width = parseFloat(widthMatch[1]);
+                
+                // Round width to 2 decimal places untuk konsistensi
+                const roundedWidth = Math.round(width * 100) / 100;
+                bar.style.width = `${roundedWidth}%`;
+                
+                // Handle very small widths
+                if (width < 15) {
+                    bar.style.justifyContent = 'flex-start';
+                    bar.querySelector('strong').style.paddingLeft = '12px';
+                } else if (width > 85) {
+                    bar.style.justifyContent = 'flex-end';
+                    bar.querySelector('strong').style.paddingRight = '12px';
+                }
+            }
+        }
+    });
+}
+
+// Jalankan fix ketika DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+    fixProgressBars();
+    
+    // Jalankan lagi setelah loading selesai (jika ada loading overlay)
+    setTimeout(fixProgressBars, 100);
+});
+
+// Jalankan juga setelah form submission
+if (typeof budgetForm !== 'undefined') {
+    budgetForm.addEventListener('submit', function() {
+        setTimeout(fixProgressBars, 500);
+    });
+}
+</script>
 {% endblock %}
