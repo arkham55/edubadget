@@ -25,7 +25,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navmenu">
-                <ul class="navbar-nav ms-auto me-3">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
                             Beranda
@@ -54,34 +54,46 @@
                             Panduan
                         </a>
                     </li>
+                    {% else %}
+                    <!-- Menu untuk user belum login -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'guide' %}active{% endif %}" href="{{ url_for('guide') }}">
+                            Panduan
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
 
-                <div class="navbar-nav">
+                <div class="d-flex align-items-center gap-2">
                     {% if session.username %}
                     <!-- User sudah login -->
                     <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            👋 {{ session.username }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <span class="me-1">👋</span> {{ session.username }}
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">📊 Dashboard</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">🚪 Logout</a></li>
                         </ul>
                     </div>
                     {% else %}
-                    <!-- User belum login - TOMBOL BARU -->
-                    <div class="nav-auth-buttons">
-                        <a class="btn-nav-login" href="{{ url_for('login') }}">🔐 Login</a>
-                        <a class="btn-nav-register pulse" href="{{ url_for('register') }}">Daftar 🚀</a>
+                    <!-- User belum login - TOMBOL YANG DIPERBAIKI -->
+                    <div class="nav-auth-buttons d-flex gap-2">
+                        <a href="{{ url_for('login') }}" class="btn btn-nav-login">
+                            🔐 Login
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-nav-register">
+                            🚀 Daftar
+                        </a>
                     </div>
                     {% endif %}
-                </div>
 
-                <button id="themeToggle" type="button" aria-label="Toggle theme">
-                    <span id="themeIcon"></span>
-                </button>
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" type="button" class="ms-2" aria-label="Toggle theme">
+                        <span id="themeIcon"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -111,10 +123,11 @@
             console.log("Theme switched to:", newTheme);
         });
 
-        // Add animation to register button on page load
+        // Optional: Add pulse animation to register button (bisa dihapus jika tidak perlu)
         document.addEventListener('DOMContentLoaded', function() {
             const registerBtn = document.querySelector('.btn-nav-register');
             if (registerBtn) {
+                registerBtn.classList.add('pulse');
                 // Remove pulse animation after 5 seconds
                 setTimeout(() => {
                     registerBtn.classList.remove('pulse');
