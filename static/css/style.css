@@ -20,6 +20,7 @@
     --hover: rgba(0,0,0,0.05);
     --bg-second: #f3f4f6;
     --section-bg: #f9fafb;
+    --legend-text: #111827; /* TAMBAHKAN INI */
 }
 
 [data-theme="dark"] {
@@ -36,6 +37,7 @@
     --hover: rgba(255,255,255,0.05);
     --bg-second: #0f172a;
     --section-bg: #1e293b;
+    --legend-text: #e2e8f0; /* TAMBAHKAN INI */
 }
 
 /* ========== BASE STYLES ========== */
