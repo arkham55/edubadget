@@ -124,8 +124,8 @@
                     <small style="color:var(--link);">{{ daily_status.date }}</small>
                 </div>
                 <div class="text-end">
-                    <div class="budget-percentage fw-bold fs-5" 
-                         style="color:{% if daily_status.status == 'success' %}#34d399{% elif daily_status.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    <div class="budget-percentage fw-bold fs-5"
+                        style="color:{% if daily_status.status == 'success' %}#34d399{% elif daily_status.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
                         {{ daily_status.percentage|round(1) }}%
                     </div>
                 </div>
@@ -140,7 +140,8 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span style="color:var(--text);">Sudah Keluar:</span>
-                    <strong style="color:{% if daily_status.status == 'success' %}#34d399{% elif daily_status.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    <strong
+                        style="color:{% if daily_status.status == 'success' %}#34d399{% elif daily_status.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
                         Rp {{ "{:,}".format(daily_status.spent|int) }}
                     </strong>
                 </div>
@@ -150,15 +151,15 @@
                         Rp {{ "{:,}".format(daily_status.remaining|int) }}
                     </strong>
                 </div>
-                
-                <!-- PROGRESS BAR -->
+
+                <!-- PROGRESS BAR - FIXED VERSION -->
                 <div class="analytics-progress mb-3">
                     <div class="analytics-progress-bar {% if daily_status.status == 'success' %}progress-success{% elif daily_status.status == 'warning' %}progress-warning{% else %}progress-danger{% endif %}"
-                         style="width:{{ daily_status.percentage if daily_status.percentage <= 100 else 100 }}%;">
+                        style="width:{{ (daily_status.percentage if daily_status.percentage <= 100 else 100)|round(2) }}%; min-width: 0.1%;">
                         <strong>{{ daily_status.percentage|round(1) }}%</strong>
                     </div>
                 </div>
-                
+
                 <!-- STATUS MESSAGE -->
                 <div class="text-center">
                     <small style="color:var(--link);">
@@ -184,8 +185,10 @@
                     💡 Tambahkan data pemasukan dan pengeluaran untuk melihat budget harian
                 </small>
                 <div class="mt-3">
-                    <a href="{{ url_for('add_income') }}" class="btn btn-sm btn-outline-info me-2">➕ Tambah Pemasukan</a>
-                    <a href="{{ url_for('add_expense') }}" class="btn btn-sm btn-outline-warning">➖ Tambah Pengeluaran</a>
+                    <a href="{{ url_for('add_income') }}" class="btn btn-sm btn-outline-info me-2">➕ Tambah
+                        Pemasukan</a>
+                    <a href="{{ url_for('add_expense') }}" class="btn btn-sm btn-outline-warning">➖ Tambah
+                        Pengeluaran</a>
                 </div>
             </div>
             {% endif %}
@@ -198,12 +201,13 @@
             <!-- HEADER YANG BENAR -->
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
-                    <h6 class="fw-bold mb-1" style="color:var(--text);">📊 Progress Minggu Ke-{{ weekly_progress.week_num }}</h6>
+                    <h6 class="fw-bold mb-1" style="color:var(--text);">📊 Progress Minggu Ke-{{
+                        weekly_progress.week_num }}</h6>
                     <small style="color:var(--link);">Target vs Realisasi</small>
                 </div>
                 <div class="text-end">
-                    <div class="budget-percentage fw-bold fs-5" 
-                         style="color:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    <div class="budget-percentage fw-bold fs-5"
+                        style="color:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
                         {{ weekly_progress.percentage|round(1) }}%
                     </div>
                 </div>
@@ -217,7 +221,8 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span style="color:var(--text);">Total Spending:</span>
-                    <strong style="color:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
+                    <strong
+                        style="color:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
                         Rp {{ "{:,}".format(weekly_progress.spending|int) }}
                     </strong>
                 </div>
@@ -227,16 +232,16 @@
                         Rp {{ "{:,}".format(weekly_progress.remaining|int) }}
                     </strong>
                 </div>
-                
+
                 <!-- PROGRESS BAR -->
                 <div class="progress mb-3" style="height:25px;">
                     <div class="progress-bar"
-                         style="width:{{ weekly_progress.percentage if weekly_progress.percentage <= 100 else 100 }}%; 
+                        style="width:{{ weekly_progress.percentage if weekly_progress.percentage <= 100 else 100 }}%; 
                                 background:{% if weekly_progress.status == 'success' %}#34d399{% elif weekly_progress.status == 'warning' %}#fbbf24{% else %}#f87171{% endif %};">
                         <strong>{{ weekly_progress.percentage|round(1) }}%</strong>
                     </div>
                 </div>
-                
+
                 <!-- STATUS MESSAGE -->
                 <div class="text-center">
                     <small style="color:var(--link);">
@@ -406,7 +411,7 @@
         <div class="col-12 col-md-6 mb-2">
             <div class="p-3 rounded" style="background:var(--bg-second); border:1px solid var(--card-border);">
                 <div class="d-flex justify-content-between">
-                    <span style="color:var(--text); font-weight: 600;">✓ 
+                    <span style="color:var(--text); font-weight: 600;">✓
                         {% if item.category == 'Food' %}Makanan/Minuman
                         {% elif item.category == 'Transportation' %}Transportasi
                         {% elif item.category == 'Entertainment' %}Hiburan
@@ -435,7 +440,8 @@
     <h5 class="fw-bold mb-2" style="color:var(--text);">💬 Insight Berdasarkan Gaya Hidup</h5>
 
     <div style="background:var(--bg-second); border:1px solid var(--card-border);" class="p-3 rounded mb-3">
-        <strong style="color:var(--link); font-size:15px;">🟦 Mode: {{ user_recommendation.lifestyle|capitalize }}</strong>
+        <strong style="color:var(--link); font-size:15px;">🟦 Mode: {{ user_recommendation.lifestyle|capitalize
+            }}</strong>
         <p class="mt-2 mb-0" style="color:var(--text); font-size:14px;">{{ user_recommendation.description }}</p>
     </div>
 
@@ -501,48 +507,48 @@
 </script>
 
 <script>
-// ===== FIX PROGRESS BAR RENDERING =====
-function fixProgressBars() {
-    const progressBars = document.querySelectorAll('.analytics-progress-bar');
-    
-    progressBars.forEach(bar => {
-        // Dapatkan lebar aktual dari style attribute
-        const style = bar.getAttribute('style');
-        if (style && style.includes('width:')) {
-            const widthMatch = style.match(/width:\s*([\d.]+)%/);
-            if (widthMatch) {
-                const width = parseFloat(widthMatch[1]);
-                
-                // Round width to 2 decimal places untuk konsistensi
-                const roundedWidth = Math.round(width * 100) / 100;
-                bar.style.width = `${roundedWidth}%`;
-                
-                // Handle very small widths
-                if (width < 15) {
-                    bar.style.justifyContent = 'flex-start';
-                    bar.querySelector('strong').style.paddingLeft = '12px';
-                } else if (width > 85) {
-                    bar.style.justifyContent = 'flex-end';
-                    bar.querySelector('strong').style.paddingRight = '12px';
+    // ===== FIX PROGRESS BAR RENDERING =====
+    function fixProgressBars() {
+        const progressBars = document.querySelectorAll('.analytics-progress-bar');
+
+        progressBars.forEach(bar => {
+            // Dapatkan lebar aktual dari style attribute
+            const style = bar.getAttribute('style');
+            if (style && style.includes('width:')) {
+                const widthMatch = style.match(/width:\s*([\d.]+)%/);
+                if (widthMatch) {
+                    const width = parseFloat(widthMatch[1]);
+
+                    // Round width to 2 decimal places untuk konsistensi
+                    const roundedWidth = Math.round(width * 100) / 100;
+                    bar.style.width = `${roundedWidth}%`;
+
+                    // Handle very small widths
+                    if (width < 15) {
+                        bar.style.justifyContent = 'flex-start';
+                        bar.querySelector('strong').style.paddingLeft = '12px';
+                    } else if (width > 85) {
+                        bar.style.justifyContent = 'flex-end';
+                        bar.querySelector('strong').style.paddingRight = '12px';
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
-// Jalankan fix ketika DOM siap
-document.addEventListener('DOMContentLoaded', function() {
-    fixProgressBars();
-    
-    // Jalankan lagi setelah loading selesai (jika ada loading overlay)
-    setTimeout(fixProgressBars, 100);
-});
+    // Jalankan fix ketika DOM siap
+    document.addEventListener('DOMContentLoaded', function () {
+        fixProgressBars();
 
-// Jalankan juga setelah form submission
-if (typeof budgetForm !== 'undefined') {
-    budgetForm.addEventListener('submit', function() {
-        setTimeout(fixProgressBars, 500);
+        // Jalankan lagi setelah loading selesai (jika ada loading overlay)
+        setTimeout(fixProgressBars, 100);
     });
-}
+
+    // Jalankan juga setelah form submission
+    if (typeof budgetForm !== 'undefined') {
+        budgetForm.addEventListener('submit', function () {
+            setTimeout(fixProgressBars, 500);
+        });
+    }
 </script>
 {% endblock %}
